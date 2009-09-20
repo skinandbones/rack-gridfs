@@ -1,4 +1,4 @@
-require 'test_helper'
+require File.join(File.dirname(__FILE__), '..', 'test_helper')
 
 class Rack::GridFSTest < Test::Unit::TestCase
   include Rack::Test::Methods
