@@ -123,6 +123,24 @@ class Rack::GridFSTest < Test::Unit::TestCase
         get '/gridfs/test.html'
         assert_equal 'text/html', last_response.content_type
       end
+      
+      should "return a not found for a unknown path" do
+        get '/gridfs/unknown'
+        assert last_response.not_found?
+      end
+      
+      should "handle complex file paths" do
+        load_artifact('test.html', 'stuff/187d/foo.html', 'text/html')
+        get '/gridfs/stuff/187d/foo.html'
+        assert_equal 'text/html', last_response.content_type
+      end
+      
+      should "work for small images" do
+        load_artifact('3wolfmoon.jpg', 'images/3wolfmoon.jpg', 'image/jpeg')
+        get '/gridfs/images/3wolfmoon.jpg'
+        assert last_response.ok?
+        assert_equal 'image/jpeg', last_response.content_type
+      end
     end
 
   end
