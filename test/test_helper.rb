@@ -10,4 +10,5 @@ require 'rack/mock'
 require 'rack/test'
 
 require 'mongo'
+require 'mongo/gridfs'
 require File.join(File.dirname(__FILE__), '..', 'lib', 'rack', 'gridfs')
