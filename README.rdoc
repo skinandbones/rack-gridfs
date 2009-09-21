@@ -1,0 +1,47 @@
+= Rack::GridFS
+
+Rack:GridFS is a Rack middleware for creating HTTP endpoints for files
+stored in MongoDB's GridFS.  You can configure a prefix string which
+will be used to match the path of a request and create a key for looking
+up the file in the GridFS store.
+
+For example,
+
+  GET '/gridfs/images/foo.jpg'
+  
+If the prefix is "gridfs", then the key will be be "images/foo.jpg".
+
+== Dependencies
+
+* ActiveSupport (activesupport)
+* Mongo Ruby Driver (mongodb-mongo)
+
+== Usage
+
+You must specify MongoDB database details:
+- hostname: the hostname/IP where the MongoDB server is running.  Default 'localhost'.
+- port: the port of the MongoDB server.  Default 27017.
+- database: the MongoDB database to connect to.
+- prefix: a string used to match against incoming paths and route to through the middleware.  Default 'gridfs'.
+
+== Sinatra Example
+
+  require 'rubygems'
+  require 'sinatra'
+
+  require 'rack/gridfs'
+  use Rack::GridFS, :hostname => 'localhost', :port => 27017, :database => 'test', :prefix => 'gridfs'
+
+  get /.*/ do
+    "Whatchya talking about?"
+  end
+
+== TODO
+
+- Make it awesome.
+- What's up with the performance?
+- Gem it up.  Anyone care?
+
+== Copyright
+
+Copyright (c) 2009 Blake Carlson. See LICENSE for details.
