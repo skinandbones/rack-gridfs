@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__), '..', 'test_helper')
+require 'test_helper'
 
 class Rack::GridFSTest < Test::Unit::TestCase
   include Rack::Test::Methods
@@ -29,7 +29,7 @@ class Rack::GridFSTest < Test::Unit::TestCase
   def load_artifact(filename, key, content_type)
     GridFS::GridStore.unlink(db, key)
     GridFS::GridStore.open(db, key, 'w', :content_type => content_type) do |dest|
-      File.open(File.join(File.dirname(__FILE__), '..', 'artifacts', filename), 'r') do |orig|
+      File.open(File.join(File.dirname(__FILE__), 'artifacts', filename), 'r') do |orig|
         dest.puts orig.read
       end
     end

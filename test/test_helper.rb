@@ -1,8 +1,6 @@
 require 'rubygems'
 require 'test/unit'
 require 'shoulda'
-
-gem 'mocha', '0.9.4'
 require 'mocha'
 
 require 'rack/builder'
