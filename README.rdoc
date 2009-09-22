@@ -16,7 +16,14 @@ If the prefix is "gridfs", then the key will be be "images/foo.jpg".
 * ActiveSupport (activesupport)
 * Mongo Ruby Driver (mongodb-mongo)
 
+== Installation
+
+  sudo gem install skinandbones-rack-gridfs --source=http://gems.github.com
+
 == Usage
+
+  require 'rack/gridfs'
+  use Rack::GridFS, :hostname => 'localhost', :port => 27017, :database => 'test', :prefix => 'gridfs'
 
 You must specify MongoDB database details:
 - hostname: the hostname/IP where the MongoDB server is running.  Default 'localhost'.
@@ -40,7 +47,6 @@ You must specify MongoDB database details:
 
 - Make it awesome.
 - What's up with the performance?
-- Gem it up.  Anyone care?
 
 == Copyright
 
