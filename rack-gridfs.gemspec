@@ -10,7 +10,6 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Blake Carlson"]
   s.date = %q{2009-09-21}
-  s.description = %q{TODO}
   s.email = %q{blake@coin-operated.net}
   s.extra_rdoc_files = [
     "LICENSE",
@@ -24,6 +23,7 @@ Gem::Specification.new do |s|
      "VERSION",
      "example/gridfs_server.rb",
      "lib/rack/gridfs.rb",
+     "rack-gridfs.gemspec",
      "test/artifacts/3wolfmoon.jpg",
      "test/artifacts/test.html",
      "test/artifacts/test.txt",
@@ -36,7 +36,7 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
   s.rubyforge_project = %q{rack-gridfs}
   s.rubygems_version = %q{1.3.2}
-  s.summary = %q{Rack middleware for creating HTTP endpoints for files stored in GridFS}
+  s.summary = %q{Rack middleware for creating HTTP endpoints for files stored in MongoDB's GridFS}
   s.test_files = [
     "test/gridfs_test.rb",
      "test/test_helper.rb"
