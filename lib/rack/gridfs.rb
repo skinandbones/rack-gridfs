@@ -14,7 +14,7 @@ module Rack
     def initialize(app, options = {})
       options.reverse_merge!(
         :hostname => 'localhost', 
-        :port => XGen::Mongo::Connection::DEFAULT_PORT,
+        :port => Mongo::Connection::DEFAULT_PORT,
         :prefix => 'gridfs'
       )
 
@@ -42,8 +42,8 @@ module Rack
     end
 
     def gridfs_request(key)
-      if XGen::Mongo::GridFS::GridStore.exist?(connection, key)
-        XGen::Mongo::GridFS::GridStore.open(connection, key, 'r') do |file|
+      if ::GridFS::GridStore.exist?(connection, key)
+        ::GridFS::GridStore.open(connection, key, 'r') do |file|
           [200, {'Content-Type' => file.content_type}, [file.read]]
         end
       else
@@ -55,7 +55,7 @@ module Rack
     
     def connect!
       Timeout::timeout(5) do
-        @connection = XGen::Mongo::Connection.new(hostname).db(database)
+        @connection = Mongo::Connection.new(hostname).db(database)
       end
     rescue Exception => e
       raise Rack::GridFSConnectonError, "Unable to connect to the MongoDB server (#{e.to_s})"

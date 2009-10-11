@@ -14,7 +14,7 @@ If the prefix is "gridfs", then the key will be be "images/foo.jpg".
 == Dependencies
 
 * ActiveSupport (activesupport)
-* Mongo Ruby Driver (mongodb-mongo)
+* Mongo Ruby Driver v0.15.1+ (mongo)
 
 == Installation
 
@@ -31,6 +31,12 @@ You must specify MongoDB database details:
 - database: the MongoDB database to connect to.
 - prefix: a string used to match against incoming paths and route to through the middleware.  Default 'gridfs'.
 
+== Caveats
+
+This is an experimental project.  The Ruby GridFS adaptor is still pretty new and the performance
+is known to be slow.  I wouldn't recommend using this middleware for anything high-volume in
+production.
+
 == Sinatra Example
 
   require 'rubygems'
@@ -42,11 +48,6 @@ You must specify MongoDB database details:
   get /.*/ do
     "Whatchya talking about?"
   end
-
-== TODO
-
-- Make it awesome.
-- What's up with the performance?
 
 == Copyright
 
