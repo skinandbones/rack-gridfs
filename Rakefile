@@ -19,7 +19,7 @@ begin
     gem.add_development_dependency('rack-test')
     gem.add_development_dependency('thoughtbot-shoulda')
   end
-  
+  Jeweler::GemcutterTasks.new
   Jeweler::RubyforgeTasks.new do |rubyforge|
     rubyforge.doc_task = "rdoc"
   end
