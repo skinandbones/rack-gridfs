@@ -5,7 +5,7 @@ require 'active_support/core_ext'
 
 module Rack
   
-  class GridFSConnectonError < StandardError ; end
+  class GridFSConnectionError < StandardError ; end
   
   class GridFS
 
@@ -58,7 +58,7 @@ module Rack
         @connection = Mongo::Connection.new(hostname).db(database)
       end
     rescue Exception => e
-      raise Rack::GridFSConnectonError, "Unable to connect to the MongoDB server (#{e.to_s})"
+      raise Rack::GridFSConnectionError, "Unable to connect to the MongoDB server (#{e.to_s})"
     end
     
   end
