@@ -13,7 +13,7 @@ begin
     
     gem.add_dependency('rack')
     gem.add_dependency('activesupport')
-    gem.add_dependency('mongo', '0.15.1')
+    gem.add_dependency('mongo', '0.18.2')
     
     gem.add_development_dependency('mocha', '0.9.4')
     gem.add_development_dependency('rack-test')
