@@ -2,23 +2,18 @@
 
 Rack:GridFS is a Rack middleware for creating HTTP endpoints for files
 stored in MongoDB's GridFS.  You can configure a prefix string which
-will be used to match the path of a request and create a key for looking
+will be used to match the path of a request and create an id for looking
 up the file in the GridFS store.
 
 For example,
 
-  GET '/gridfs/images/foo.jpg'
+  GET '/gridfs/someobjectid'
   
-If the prefix is "gridfs", then the key will be be "images/foo.jpg".
-
-== Dependencies
-
-* ActiveSupport (activesupport)
-* Mongo Ruby Driver v0.15.1+ (mongo)
+If the prefix is "gridfs", then the key will be be "someobjectid".
 
 == Installation
 
-  sudo gem install skinandbones-rack-gridfs --source=http://gems.github.com
+  gem install jnunemaker--rack-gridfs
 
 == Usage
 
@@ -30,12 +25,6 @@ You must specify MongoDB database details:
 - port: the port of the MongoDB server.  Default 27017.
 - database: the MongoDB database to connect to.
 - prefix: a string used to match against incoming paths and route to through the middleware.  Default 'gridfs'.
-
-== Caveats
-
-This is an experimental project.  The Ruby GridFS adaptor is still pretty new and the performance
-is known to be slow.  I wouldn't recommend using this middleware for anything high-volume in
-production.
 
 == Sinatra Example
 
