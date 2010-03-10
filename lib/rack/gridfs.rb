@@ -4,26 +4,23 @@ require 'mongo/gridfs'
 require 'active_support/core_ext'
 
 module Rack
-  
   class GridFSConnectionError < StandardError ; end
-  
   class GridFS
+    attr_reader :hostname, :port, :database, :prefix, :db
 
-    attr_reader :hostname, :port, :database, :prefix, :connection
-    
     def initialize(app, options = {})
-      options.reverse_merge!(
-        :hostname => 'localhost', 
-        :port => Mongo::Connection::DEFAULT_PORT,
-        :prefix => 'gridfs'
-      )
+      options.reverse_merge!({
+        :hostname => 'localhost',
+        :prefix   => 'gridfs',
+        :port     => Mongo::Connection::DEFAULT_PORT,
+      })
 
       @app        = app
       @hostname   = options[:hostname]
       @port       = options[:port]
       @database   = options[:database]
       @prefix     = options[:prefix]
-      @connection = nil
+      @db         = nil
 
       connect!
     end
@@ -37,30 +34,20 @@ module Rack
       end
     end
 
-    def not_found
+    def gridfs_request(id)
+      file = Mongo::Grid.new(db).get(Mongo::ObjectID.from_string(id))
+      [200, {'Content-Type' => file.content_type}, [file.read]]
+    rescue Mongo::GridError, Mongo::InvalidObjectID
       [404, {'Content-Type' => 'text/plain'}, ['File not found.']]
     end
 
-    def gridfs_request(key)
-      if ::GridFS::GridStore.exist?(connection, key)
-        ::GridFS::GridStore.open(connection, key, 'r') do |file|
-          [200, {'Content-Type' => file.content_type}, [file.read]]
-        end
-      else
-        not_found
-      end
-    end
-    
     private
-    
-    def connect!
-      Timeout::timeout(5) do
-        @connection = Mongo::Connection.new(hostname).db(database)
+      def connect!
+        Timeout::timeout(5) do
+          @db = Mongo::Connection.new(hostname).db(database)
+        end
+      rescue Exception => e
+        raise Rack::GridFSConnectionError, "Unable to connect to the MongoDB server (#{e.to_s})"
       end
-    rescue Exception => e
-      raise Rack::GridFSConnectionError, "Unable to connect to the MongoDB server (#{e.to_s})"
-    end
-    
   end
-    
 end

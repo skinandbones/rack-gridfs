@@ -2,20 +2,20 @@ require 'test_helper'
 
 class Rack::GridFSTest < Test::Unit::TestCase
   include Rack::Test::Methods
-  
+
   def stub_mongodb_connection
     Rack::GridFS.any_instance.stubs(:connect!).returns(true)
   end
-  
+
   def test_database_options
     { :hostname => 'localhost', :port => 27017, :database => 'test', :prefix => 'gridfs' }
   end
-  
+
   def db
     @db ||= Mongo::Connection.new(test_database_options[:hostname], test_database_options[:port]).db(test_database_options[:database])
   end
-  
-  def app 
+
+  def app
     gridfs_opts = test_database_options
     Rack::Builder.new do
       use Rack::GridFS, gridfs_opts
@@ -24,17 +24,12 @@ class Rack::GridFSTest < Test::Unit::TestCase
   end
 
   def load_artifact(filename, key, content_type)
-    GridFS::GridStore.open(db, key, 'w', :content_type => content_type) do |dest|
-      File.open(File.join(File.dirname(__FILE__), 'artifacts', filename), 'r') do |orig|
-        dest.puts orig.read
-      end
-    end
+    contents = File.read(File.join(File.dirname(__FILE__), 'artifacts', filename))
+    Mongo::Grid.new(db).put(contents, filename, :content_type => content_type)
   end
 
   context "Rack::GridFS" do
-
     context "on initialization" do
-
       setup do
         stub_mongodb_connection
         @options = { :hostname => 'myhostname.mydomain', :port => 8765, :database => 'mydatabase', :prefix => 'myprefix' }
@@ -74,7 +69,7 @@ class Rack::GridFSTest < Test::Unit::TestCase
         mware = Rack::GridFS.new(nil, @options)
         assert_equal mware.prefix, @options[:prefix]
       end
-      
+
       should "have a default prefix" do
         mware = Rack::GridFS.new(nil, @options.except(:prefix))
         assert_equal mware.prefix, 'gridfs'
@@ -84,7 +79,6 @@ class Rack::GridFSTest < Test::Unit::TestCase
         Rack::GridFS.any_instance.expects(:connect!).returns(true).once
         Rack::GridFS.new(nil, @options)
       end
-
     end
 
     should "delegate requests with a non-matching prefix" do
@@ -95,56 +89,48 @@ class Rack::GridFSTest < Test::Unit::TestCase
       end
     end
 
-    context "with a files in GridFS" do
+    context "with files in GridFS" do
       setup do
-        load_artifact('test.txt', 'test.txt', 'text/plain')
-        load_artifact('test.html', 'test.html', 'text/html')
+        @text_id = load_artifact('test.txt', 'test.txt', 'text/plain')
+        @html_id = load_artifact('test.html', 'test.html', 'text/html')
       end
 
       teardown do
-        db.collection('fs.files').clear
+        db.collection('fs.files').remove
       end
 
       should "return TXT files stored in GridFS" do
-        get '/gridfs/test.txt'
-        assert_equal "Lorem ipsum dolor sit amet.\n", last_response.body
+        get "/gridfs/#{@text_id}"
+        assert_equal "Lorem ipsum dolor sit amet.", last_response.body
       end
 
       should "return the proper content type for TXT files" do
-        get '/gridfs/test.txt'
+        get "/gridfs/#{@text_id}"
         assert_equal 'text/plain', last_response.content_type
       end
 
       should "return HTML files stored in GridFS" do
-        get '/gridfs/test.html'
+        get "/gridfs/#{@html_id}"
         assert_match /html.*?body.*Test/m, last_response.body
       end
 
       should "return the proper content type for HTML files" do
-        get '/gridfs/test.html'
+        get "/gridfs/#{@html_id}"
         assert_equal 'text/html', last_response.content_type
       end
-      
+
       should "return a not found for a unknown path" do
         get '/gridfs/unknown'
         assert last_response.not_found?
       end
-      
-      should "handle complex file paths" do
-        load_artifact('test.html', 'stuff/187d/foo.html', 'text/html')
-        get '/gridfs/stuff/187d/foo.html'
-        assert_equal 'text/html', last_response.content_type
-      end
-      
+
       should "work for small images" do
-        load_artifact('3wolfmoon.jpg', 'images/3wolfmoon.jpg', 'image/jpeg')
-        get '/gridfs/images/3wolfmoon.jpg'
+        image_id = load_artifact('3wolfmoon.jpg', 'images/3wolfmoon.jpg', 'image/jpeg')
+        get "/gridfs/#{image_id}"
         assert last_response.ok?
         assert_equal 'image/jpeg', last_response.content_type
       end
     end
-
   end
-
 end
 
