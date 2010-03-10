@@ -41,7 +41,8 @@ class Rack::GridFSTest < Test::Unit::TestCase
       end
 
       should "have a default hostname" do
-        mware = Rack::GridFS.new(nil, @options.except(:hostname))
+        @options.delete(:hostname)
+        mware = Rack::GridFS.new(nil, @options)
         assert_equal 'localhost', mware.hostname
       end
 
@@ -51,7 +52,8 @@ class Rack::GridFSTest < Test::Unit::TestCase
       end
 
       should "have a default port" do
-        mware = Rack::GridFS.new(nil, @options.except(:port))
+        @options.delete(:port)
+        mware = Rack::GridFS.new(nil, @options)
         assert_equal Mongo::Connection::DEFAULT_PORT, mware.port
       end
 
@@ -61,7 +63,8 @@ class Rack::GridFSTest < Test::Unit::TestCase
       end
 
       should "not have a default database" do
-        mware = Rack::GridFS.new(nil, @options.except(:database))
+        @options.delete(:database)
+        mware = Rack::GridFS.new(nil, @options)
         assert_nil mware.database
       end
 
@@ -71,7 +74,8 @@ class Rack::GridFSTest < Test::Unit::TestCase
       end
 
       should "have a default prefix" do
-        mware = Rack::GridFS.new(nil, @options.except(:prefix))
+        @options.delete(:prefix)
+        mware = Rack::GridFS.new(nil, @options)
         assert_equal mware.prefix, 'gridfs'
       end
 

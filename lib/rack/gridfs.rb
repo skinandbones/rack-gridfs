@@ -1,7 +1,5 @@
 require 'timeout'
 require 'mongo'
-require 'mongo/gridfs'
-require 'active_support/core_ext'
 
 module Rack
   class GridFSConnectionError < StandardError ; end
@@ -9,11 +7,11 @@ module Rack
     attr_reader :hostname, :port, :database, :prefix, :db
 
     def initialize(app, options = {})
-      options.reverse_merge!({
+      options = {
         :hostname => 'localhost',
         :prefix   => 'gridfs',
         :port     => Mongo::Connection::DEFAULT_PORT,
-      })
+      }.merge(options)
 
       @app        = app
       @hostname   = options[:hostname]
