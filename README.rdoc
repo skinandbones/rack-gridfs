@@ -34,6 +34,8 @@ You must specify MongoDB database details:
   require 'rack/gridfs'
   use Rack::GridFS, :hostname => 'localhost', :port => 27017, :database => 'test', :prefix => 'gridfs'
 
+  # put a file in gridfs and try visiting /gridfs/objectid
+
   get /.*/ do
     "Whatchya talking about?"
   end
