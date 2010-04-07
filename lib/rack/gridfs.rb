@@ -18,11 +18,11 @@ module Rack
       }.merge(options)
 
       @app        = app
-      @hostname   = options[:hostname]
-      @port       = options[:port]
-      @database   = options[:database]
       @prefix     = options[:prefix]
       @db         = nil
+
+      @hostname, @port, @database, @username, @password = 
+        options.values_at(:hostname, :port, :database, :username, :password)
 
       connect!
     end
@@ -44,14 +44,14 @@ module Rack
     end
 
     private
-
-    def connect!
-      Timeout::timeout(5) do
-        @db = Mongo::Connection.new(hostname).db(database)
+      def connect!
+        Timeout::timeout(5) do
+          @db = Mongo::Connection.new(hostname, port).db(database)
+          @db.authenticate(@username, @password) if @username
+        end
+      rescue Exception => e
+        raise Rack::GridFSConnectionError, "Unable to connect to the MongoDB server (#{e.to_s})"
       end
-    rescue Exception => e
-      raise Rack::GridFSConnectionError, "Unable to connect to the MongoDB server (#{e.to_s})"
-    end
 
   end
 
