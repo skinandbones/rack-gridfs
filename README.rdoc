@@ -2,19 +2,23 @@
 
 Rack:GridFS is a Rack middleware for creating HTTP endpoints for files
 stored in MongoDB's GridFS.  You can configure a prefix string which
-will be used to match the path of a request and create a key for looking
+will be used to match the path of a request and supply an id for looking
 up the file in the GridFS store.
 
 For example,
 
-  GET '/gridfs/images/foo.jpg'
+  GET '/gridfs/someobjectid'
   
-If the prefix is "gridfs", then the key will be be "images/foo.jpg".
+If the prefix is "gridfs", then the id will be be "someobjectid".
 
-== Dependencies
+== Mongo Driver Compatibility Notes
 
-* ActiveSupport (activesupport)
-* Mongo Ruby Driver v0.15.1+ (mongo)
+This version is currently based off of mongo-0.20.1.  
+
+As of mongo-0.19.1, there have been significant changes to GridFS.  I do
+not plan to support versions of the mongo driver prior to 0.19.  There are
+some compatibility issues with mongo-0.19 vs. mongo-0.20 (Mongo::ObjectID
+vs. BSON::ObjectID).  For now, I am choosing to support mongo-0.20.
 
 == Installation
 
@@ -31,13 +35,9 @@ You must specify MongoDB database details:
 - database: the MongoDB database to connect to.
 - prefix: a string used to match against incoming paths and route to through the middleware.  Default 'gridfs'.
 
-== Caveats
-
-This is an experimental project.  The Ruby GridFS adaptor is still pretty new and the performance
-is known to be slow.  I wouldn't recommend using this middleware for anything high-volume in
-production.
-
 == Sinatra Example
+
+  # TODO: THIS COULD USE A LOT MORE EXPLANATION!
 
   require 'rubygems'
   require 'sinatra'
@@ -46,9 +46,9 @@ production.
   use Rack::GridFS, :hostname => 'localhost', :port => 27017, :database => 'test', :prefix => 'gridfs'
 
   get /.*/ do
-    "Whatchya talking about?"
+    "The URL did not match a file in GridFS."
   end
 
 == Copyright
 
-Copyright (c) 2009 Blake Carlson. See LICENSE for details.
+Copyright (c) 2010 Blake Carlson. See LICENSE for details.
