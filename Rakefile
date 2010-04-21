@@ -12,12 +12,11 @@ begin
     gem.rubyforge_project = "rack-gridfs"
     
     gem.add_dependency('rack')
-    gem.add_dependency('activesupport')
-    gem.add_dependency('mongo', '0.15.1')
+    gem.add_dependency('mongo', '>=0.20.1')
     
     gem.add_development_dependency('mocha', '0.9.4')
     gem.add_development_dependency('rack-test')
-    gem.add_development_dependency('thoughtbot-shoulda')
+    gem.add_development_dependency('shoulda')
   end
   Jeweler::GemcutterTasks.new
   Jeweler::RubyforgeTasks.new do |rubyforge|

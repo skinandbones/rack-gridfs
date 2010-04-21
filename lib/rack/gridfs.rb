@@ -1,7 +1,5 @@
 require 'timeout'
 require 'mongo'
-require 'mongo/gridfs'
-require 'active_support/core_ext'
 
 module Rack
   
@@ -9,21 +7,21 @@ module Rack
   
   class GridFS
 
-    attr_reader :hostname, :port, :database, :prefix, :connection
+    attr_reader :hostname, :port, :database, :prefix, :db
     
     def initialize(app, options = {})
-      options.reverse_merge!(
+      options = {
         :hostname => 'localhost', 
-        :port => Mongo::Connection::DEFAULT_PORT,
-        :prefix => 'gridfs'
-      )
+        :prefix   => 'gridfs',
+        :port     => Mongo::Connection::DEFAULT_PORT
+      }.merge(options)
 
       @app        = app
       @hostname   = options[:hostname]
       @port       = options[:port]
       @database   = options[:database]
       @prefix     = options[:prefix]
-      @connection = nil
+      @db         = nil
 
       connect!
     end
@@ -37,25 +35,18 @@ module Rack
       end
     end
 
-    def not_found
+    def gridfs_request(id)
+      file = Mongo::Grid.new(db).get(BSON::ObjectID.from_string(id))
+      [200, {'Content-Type' => file.content_type}, [file.read]]
+    rescue Mongo::GridError, BSON::InvalidObjectID
       [404, {'Content-Type' => 'text/plain'}, ['File not found.']]
-    end
-
-    def gridfs_request(key)
-      if ::GridFS::GridStore.exist?(connection, key)
-        ::GridFS::GridStore.open(connection, key, 'r') do |file|
-          [200, {'Content-Type' => file.content_type}, [file.read]]
-        end
-      else
-        not_found
-      end
     end
     
     private
     
     def connect!
       Timeout::timeout(5) do
-        @connection = Mongo::Connection.new(hostname).db(database)
+        @db = Mongo::Connection.new(hostname).db(database)
       end
     rescue Exception => e
       raise Rack::GridFSConnectionError, "Unable to connect to the MongoDB server (#{e.to_s})"

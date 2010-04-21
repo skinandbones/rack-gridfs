@@ -23,12 +23,9 @@ class Rack::GridFSTest < Test::Unit::TestCase
     end
   end
 
-  def load_artifact(filename, key, content_type)
-    GridFS::GridStore.open(db, key, 'w', :content_type => content_type) do |dest|
-      File.open(File.join(File.dirname(__FILE__), 'artifacts', filename), 'r') do |orig|
-        dest.puts orig.read
-      end
-    end
+  def load_artifact(filename, content_type)
+    contents = File.read(File.join(File.dirname(__FILE__), 'artifacts', filename))
+    Mongo::Grid.new(db).put(contents, :filename => filename, :content_type => content_type)
   end
 
   context "Rack::GridFS" do
@@ -95,33 +92,33 @@ class Rack::GridFSTest < Test::Unit::TestCase
       end
     end
 
-    context "with a files in GridFS" do
+    context "with files in GridFS" do
       setup do
-        load_artifact('test.txt', 'test.txt', 'text/plain')
-        load_artifact('test.html', 'test.html', 'text/html')
+        @text_id = load_artifact('test.txt', 'text/plain')
+        @html_id = load_artifact('test.html', 'text/html')
       end
 
       teardown do
-        db.collection('fs.files').clear
+        db.collection('fs.files').remove
       end
 
       should "return TXT files stored in GridFS" do
-        get '/gridfs/test.txt'
-        assert_equal "Lorem ipsum dolor sit amet.\n", last_response.body
+        get "/gridfs/#{@text_id}"
+        assert_equal "Lorem ipsum dolor sit amet.", last_response.body
       end
 
       should "return the proper content type for TXT files" do
-        get '/gridfs/test.txt'
+        get "/gridfs/#{@text_id}"
         assert_equal 'text/plain', last_response.content_type
       end
 
       should "return HTML files stored in GridFS" do
-        get '/gridfs/test.html'
+        get "/gridfs/#{@html_id}"
         assert_match /html.*?body.*Test/m, last_response.body
       end
-
+      
       should "return the proper content type for HTML files" do
-        get '/gridfs/test.html'
+        get "/gridfs/#{@html_id}"
         assert_equal 'text/html', last_response.content_type
       end
       
@@ -130,15 +127,9 @@ class Rack::GridFSTest < Test::Unit::TestCase
         assert last_response.not_found?
       end
       
-      should "handle complex file paths" do
-        load_artifact('test.html', 'stuff/187d/foo.html', 'text/html')
-        get '/gridfs/stuff/187d/foo.html'
-        assert_equal 'text/html', last_response.content_type
-      end
-      
       should "work for small images" do
-        load_artifact('3wolfmoon.jpg', 'images/3wolfmoon.jpg', 'image/jpeg')
-        get '/gridfs/images/3wolfmoon.jpg'
+        image_id = load_artifact('3wolfmoon.jpg', 'image/jpeg')
+        get "/gridfs/#{image_id}"
         assert last_response.ok?
         assert_equal 'image/jpeg', last_response.content_type
       end
