@@ -1,5 +1,5 @@
 require 'test_helper'
-
+require 'pp'
 class Rack::GridFSTest < Test::Unit::TestCase
   include Rack::Test::Methods
   include Rack::GridFS::Test::Methods
@@ -114,22 +114,22 @@ class Rack::GridFSTest < Test::Unit::TestCase
       end
 
       should "return TXT files stored in GridFS" do
-        get "/gridfs/#{@text_id}"
+        get "/gridfs/test.txt"
         assert_equal "Lorem ipsum dolor sit amet.", last_response.body
       end
 
       should "return the proper content type for TXT files" do
-        get "/gridfs/#{@text_id}"
+        get "/gridfs/test.txt"
         assert_equal 'text/plain', last_response.content_type
       end
 
       should "return HTML files stored in GridFS" do
-        get "/gridfs/#{@html_id}"
+        get "/gridfs/test.html"
         assert_match /html.*?body.*Test/m, last_response.body
       end
 
       should "return the proper content type for HTML files" do
-        get "/gridfs/#{@html_id}"
+        get "/gridfs/test.html"
         assert_equal 'text/html', last_response.content_type
       end
 
@@ -140,9 +140,26 @@ class Rack::GridFSTest < Test::Unit::TestCase
 
       should "work for small images" do
         image_id = load_artifact('3wolfmoon.jpg', 'image/jpeg')
-        get "/gridfs/#{image_id}"
+        gridfile = Mongo::Grid.new(db).get(image_id)
+        get "/gridfs/3wolfmoon.jpg"
         assert last_response.ok?
         assert_equal 'image/jpeg', last_response.content_type
+        assert_equal gridfile.upload_date.httpdate, last_response.headers["Last-Modified"]
+        assert_equal gridfile.files_id.to_s, last_response.headers["Etag"]
+      end
+      
+      should "return 304 when Etag matches" do
+        image_id = load_artifact('3wolfmoon.jpg', 'image/jpeg')
+        gridfile = Mongo::Grid.new(db).get(image_id)
+        get "/gridfs/3wolfmoon.jpg", nil, {'If-None-Match' => gridfile.files_id.to_s}
+        assert_equal 304, last_response.status
+      end
+      
+      should "return 304 when Last-Modified matches" do
+        image_id = load_artifact('3wolfmoon.jpg', 'image/jpeg')
+        gridfile = Mongo::Grid.new(db).get(image_id)
+        get "/gridfs/3wolfmoon.jpg", nil, {'If-Modified-Since' => gridfile.upload_date.httpdate}
+        assert_equal 304, last_response.status
       end
     end
 

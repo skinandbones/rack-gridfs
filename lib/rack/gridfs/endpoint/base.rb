@@ -15,7 +15,8 @@ module Rack
         end
 
         def call(env)
-          gridfs_request( identifier_for_path(env['PATH_INFO']) )
+          request = Rack::Request.new(env)
+          gridfs_request( identifier_for_path(env['PATH_INFO']), request )
         end
 
         def identifier_for_path(path)
@@ -28,10 +29,17 @@ module Rack
 
         protected
 
-        def gridfs_request(identifier)
-          file = find_file(identifier)
-          [200, headers(file), file]
-        rescue Mongo::GridFileNotFound, BSON::InvalidObjectId
+        def gridfs_request(id, request)
+          grid = Mongo::GridFileSystem.new(db)
+          file = grid.open(id, 'r')
+          if request.env['If-None-Match'] == file.files_id.to_s || request.env['If-Modified-Since'] == file.upload_date.httpdate
+            [304, {'Content-Type' => 'text/plain'}, ['Not modified']]
+          else
+            [200, headers(file), [file.read]]
+          end
+        rescue Mongo::GridError, BSON::InvalidObjectId
+          [404, {'Content-Type' => 'text/plain'}, ['File not found.' + id]]
+        rescue Mongo::GridFileNotFound
           [404, {'Content-Type' => 'text/plain'}, ['File not found.']]
         end
 
@@ -43,7 +51,7 @@ module Rack
         end
 
         def headers(file)
-          { "Content-Type" => file.content_type }
+          {'Content-Type' => file.content_type, 'Last-Modified' => file.upload_date.httpdate, 'Etag' => file.files_id.to_s}
         end
 
       end
