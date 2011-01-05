@@ -39,7 +39,7 @@ module Rack
     def gridfs_request(id)
       file = Mongo::Grid.new(db).get(BSON::ObjectId.from_string(id))
       [200, {'Content-Type' => file.content_type}, [file.read]]
-    rescue Mongo::GridError, BSON::InvalidObjectId
+    rescue Mongo::GridFileNotFound, BSON::InvalidObjectId
       [404, {'Content-Type' => 'text/plain'}, ['File not found.']]
     end
 
