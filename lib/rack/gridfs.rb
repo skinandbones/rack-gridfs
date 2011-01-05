@@ -6,6 +6,7 @@ module Rack
   class GridFSConnectionError < StandardError ; end
   
   class GridFS
+    VERSION = "0.2.0"
 
     attr_reader :hostname, :port, :database, :prefix, :db
     

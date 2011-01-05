@@ -1,30 +1,5 @@
-require 'rubygems'
-require 'rake'
-
-begin
-  require 'jeweler'
-  Jeweler::Tasks.new do |gem|
-    gem.name              = "rack-gridfs"
-    gem.summary           = "Rack middleware for creating HTTP endpoints for files stored in MongoDB's GridFS"
-    gem.email             = "blake@coin-operated.net"
-    gem.homepage          = "http://github.com/skinandbones/rack-gridfs"
-    gem.authors           = ["Blake Carlson"]
-    gem.rubyforge_project = "rack-gridfs"
-    
-    gem.add_dependency('rack')
-    gem.add_dependency('mongo', '>=0.20.1')
-    
-    gem.add_development_dependency('mocha', '0.9.4')
-    gem.add_development_dependency('rack-test')
-    gem.add_development_dependency('shoulda')
-  end
-  Jeweler::GemcutterTasks.new
-  Jeweler::RubyforgeTasks.new do |rubyforge|
-    rubyforge.doc_task = "rdoc"
-  end
-rescue LoadError
-  puts "Jeweler (or a dependency) not available. Install it with: sudo gem install jeweler"
-end
+require 'bundler'
+Bundler::GemHelper.install_tasks
 
 require 'rake/testtask'
 Rake::TestTask.new(:test) do |test|
@@ -42,24 +17,18 @@ begin
   end
 rescue LoadError
   task :rcov do
-    abort "RCov is not available. In order to run rcov, you must: sudo gem install spicycode-rcov"
+    abort "RCov is not available. In order to run rcov, you must: gem install rcov"
   end
 end
-
-task :test => :check_dependencies
 
 task :default => :test
 
 require 'rake/rdoctask'
 Rake::RDocTask.new do |rdoc|
-  if File.exist?('VERSION')
-    version = File.read('VERSION')
-  else
-    version = ""
-  end
+  require File.expand_path("../lib/rack/gridfs", __FILE__)
 
   rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "Rack::GridFS #{version}"
+  rdoc.title = "Rack::GridFS #{Rack::GridFS::VERSION}"
   rdoc.rdoc_files.include('README*')
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
