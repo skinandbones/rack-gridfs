@@ -13,16 +13,13 @@ If the prefix is "gridfs", then the id will be be "someobjectid".
 
 == Mongo Driver Compatibility Notes
 
-This version is currently based off of mongo-0.20.1.
-
-As of mongo-0.19.1, there have been significant changes to GridFS.  I do
-not plan to support versions of the mongo driver prior to 0.19.  There are
-some compatibility issues with mongo-0.19 vs. mongo-0.20 (Mongo::ObjectID
-vs. BSON::ObjectID).  For now, I am choosing to support mongo-0.20.
+This version is currently based on mongo-1.1+. As there were significant changes
+to the GridFS API prior to v1.0, you may have luck with the git-tagged version
+0.2.0 of this library with earlier versions of the driver.
 
 == Installation
 
-  sudo gem install skinandbones-rack-gridfs --source=http://gems.github.com
+  gem install rack-gridfs
 
 == Usage
 
