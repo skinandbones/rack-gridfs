@@ -8,12 +8,12 @@ up the file in the GridFS store.
 For example,
 
   GET '/gridfs/someobjectid'
-  
+
 If the prefix is "gridfs", then the id will be be "someobjectid".
 
 == Mongo Driver Compatibility Notes
 
-This version is currently based off of mongo-0.20.1.  
+This version is currently based off of mongo-0.20.1.
 
 As of mongo-0.19.1, there have been significant changes to GridFS.  I do
 not plan to support versions of the mongo driver prior to 0.19.  There are

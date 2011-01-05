@@ -2,20 +2,20 @@ require 'test_helper'
 
 class Rack::GridFSTest < Test::Unit::TestCase
   include Rack::Test::Methods
-  
+
   def stub_mongodb_connection
     Rack::GridFS.any_instance.stubs(:connect!).returns(true)
   end
-  
+
   def test_database_options
     { :hostname => 'localhost', :port => 27017, :database => 'test', :prefix => 'gridfs' }
   end
-  
+
   def db
     @db ||= Mongo::Connection.new(test_database_options[:hostname], test_database_options[:port]).db(test_database_options[:database])
   end
-  
-  def app 
+
+  def app
     gridfs_opts = test_database_options
     Rack::Builder.new do
       use Rack::GridFS, gridfs_opts
@@ -71,7 +71,7 @@ class Rack::GridFSTest < Test::Unit::TestCase
         mware = Rack::GridFS.new(nil, @options)
         assert_equal mware.prefix, @options[:prefix]
       end
-      
+
       should "have a default prefix" do
         mware = Rack::GridFS.new(nil, @options.except(:prefix))
         assert_equal mware.prefix, 'gridfs'
@@ -116,17 +116,17 @@ class Rack::GridFSTest < Test::Unit::TestCase
         get "/gridfs/#{@html_id}"
         assert_match /html.*?body.*Test/m, last_response.body
       end
-      
+
       should "return the proper content type for HTML files" do
         get "/gridfs/#{@html_id}"
         assert_equal 'text/html', last_response.content_type
       end
-      
+
       should "return a not found for a unknown path" do
         get '/gridfs/unknown'
         assert last_response.not_found?
       end
-      
+
       should "work for small images" do
         image_id = load_artifact('3wolfmoon.jpg', 'image/jpeg')
         get "/gridfs/#{image_id}"
