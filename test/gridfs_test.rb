@@ -15,66 +15,103 @@ class Rack::GridFSTest < Test::Unit::TestCase
     @db ||= Mongo::Connection.new(test_database_options[:hostname], test_database_options[:port]).db(test_database_options[:database])
   end
 
-  def app
-    gridfs_opts = test_database_options
+  def setup_app(opts={})
+    gridfs_opts = test_database_options.merge(opts)
     Rack::Builder.new do
       use Rack::GridFS, gridfs_opts
       run lambda { |env| [200, {'Content-Type' => 'text/plain'}, ["Hello, World!"]] }
     end
   end
 
-  def load_artifact(filename, content_type)
+  def load_artifact(filename, content_type, path=nil)
     contents = File.read(File.join(File.dirname(__FILE__), 'artifacts', filename))
-    Mongo::Grid.new(db).put(contents, :filename => filename, :content_type => content_type)
+    if path
+      grid = Mongo::GridFileSystem.new(db)
+      file = [path, filename].join('/')
+      grid.open(file, 'w') { |f| f.write contents }
+      grid.open(file, 'r')
+    else      
+      Mongo::Grid.new(db).put(contents, :filename => filename, :content_type => content_type)
+    end
   end
 
   context "Rack::GridFS" do
+    setup do
+      def app; setup_app end
+    end
 
     context "on initialization" do
 
       setup do
         stub_mongodb_connection
-        @options = { :hostname => 'myhostname.mydomain', :port => 8765, :database => 'mydatabase', :prefix => 'myprefix' }
+        @options = {
+          :hostname => 'myhostname.mydomain',
+          :port => 8765,
+          :database => 'mydatabase',
+          :prefix => 'myprefix',
+          :username => 'bob',
+          :password => 'so-s3cur3'
+        }
       end
 
       should "have a hostname option" do
         mware = Rack::GridFS.new(nil, @options)
-        assert_equal @options[:hostname], mware.hostname
+        assert_equal @options[:hostname], mware.instance_variable_get(:@hostname)
       end
 
       should "have a default hostname" do
         mware = Rack::GridFS.new(nil, @options.except(:hostname))
-        assert_equal 'localhost', mware.hostname
+        assert_equal 'localhost', mware.instance_variable_get(:@hostname)
       end
 
       should "have a port option" do
         mware = Rack::GridFS.new(nil, @options)
-        assert_equal @options[:port], mware.port
+        assert_equal @options[:port], mware.instance_variable_get(:@port)
       end
 
       should "have a default port" do
         mware = Rack::GridFS.new(nil, @options.except(:port))
-        assert_equal Mongo::Connection::DEFAULT_PORT, mware.port
+        assert_equal Mongo::Connection::DEFAULT_PORT, mware.instance_variable_get(:@port)
       end
 
       should "have a database option" do
         mware = Rack::GridFS.new(nil, @options)
-        assert_equal @options[:database], mware.database
+        assert_equal @options[:database], mware.instance_variable_get(:@database)
       end
 
       should "not have a default database" do
         mware = Rack::GridFS.new(nil, @options.except(:database))
-        assert_nil mware.database
+        assert_nil mware.instance_variable_get(:@database)
       end
 
       should "have a prefix option" do
         mware = Rack::GridFS.new(nil, @options)
-        assert_equal mware.prefix, @options[:prefix]
+        assert_equal mware.instance_variable_get(:@prefix), @options[:prefix]
       end
 
       should "have a default prefix" do
         mware = Rack::GridFS.new(nil, @options.except(:prefix))
-        assert_equal mware.prefix, 'gridfs'
+        assert_equal mware.instance_variable_get(:@prefix), 'gridfs'
+      end
+
+      should "have a username option" do
+        mware = Rack::GridFS.new(nil, @options)
+        assert_equal @options[:username], mware.instance_variable_get(:@username)
+      end
+
+      should "have a password option" do
+        mware = Rack::GridFS.new(nil, @options)
+        assert_equal @options[:password], mware.instance_variable_get(:@password)
+      end
+
+      should "not have a default username" do
+        mware = Rack::GridFS.new(nil, @options.except(:username))
+        assert_nil mware.instance_variable_get(:@username)
+      end
+
+      should "not have a default password" do
+        mware = Rack::GridFS.new(nil, @options.except(:password))
+        assert_nil mware.instance_variable_get(:@password)
       end
 
       should "connect to the MongoDB server" do
@@ -92,7 +129,7 @@ class Rack::GridFSTest < Test::Unit::TestCase
       end
     end
 
-    context "with files in GridFS" do
+    context "for lookup by ObjectId" do
       setup do
         @text_id = load_artifact('test.txt', 'text/plain')
         @html_id = load_artifact('test.html', 'text/html')
@@ -130,6 +167,50 @@ class Rack::GridFSTest < Test::Unit::TestCase
       should "work for small images" do
         image_id = load_artifact('3wolfmoon.jpg', 'image/jpeg')
         get "/gridfs/#{image_id}"
+        assert last_response.ok?
+        assert_equal 'image/jpeg', last_response.content_type
+      end
+    end
+
+    context "for lookup by filename" do
+      setup do
+        def app; setup_app(:lookup => :path) end
+        @text_file = load_artifact('test.txt', nil, path='text')
+        @html_file = load_artifact('test.html', nil, path='html')
+      end
+
+      teardown do
+        db.collection('fs.files').remove
+      end
+
+      should "return TXT files stored in GridFS" do
+        get "/gridfs/#{@text_file.filename}"
+        assert_equal "Lorem ipsum dolor sit amet.", last_response.body
+      end
+
+      should "return the proper content type for TXT files" do
+        get "/gridfs/#{@text_file.filename}"
+        assert_equal 'text/plain', last_response.content_type
+      end
+
+      should "return HTML files stored in GridFS" do
+        get "/gridfs/#{@html_file.filename}"
+        assert_match /html.*?body.*Test/m, last_response.body
+      end
+
+      should "return the proper content type for HTML files" do
+        get "/gridfs/#{@html_file.filename}"
+        assert_equal 'text/html', last_response.content_type
+      end
+
+      should "return a not found for a unknown path" do
+        get '/gridfs/unknown'
+        assert last_response.not_found?
+      end
+
+      should "work for small images" do
+        image_id = load_artifact('3wolfmoon.jpg', nil, 'images')
+        get "/gridfs/#{image_id.filename}"
         assert last_response.ok?
         assert_equal 'image/jpeg', last_response.content_type
       end
