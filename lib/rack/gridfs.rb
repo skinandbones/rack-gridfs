@@ -16,7 +16,7 @@ module Rack
       }.merge(options)
 
       @app        = app
-      @prefix     = options[:prefix]
+      @prefix     = options[:prefix].gsub(/^\//, '')
       @lookup     = options[:lookup]
       @db         = nil
 
