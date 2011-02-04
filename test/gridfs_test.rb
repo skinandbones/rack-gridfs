@@ -2,38 +2,7 @@ require 'test_helper'
 
 class Rack::GridFSTest < Test::Unit::TestCase
   include Rack::Test::Methods
-
-  def stub_mongodb_connection
-    Rack::GridFS.any_instance.stubs(:connect!).returns(true)
-  end
-
-  def test_database_options
-    { :hostname => 'localhost', :port => 27017, :database => 'test', :prefix => 'gridfs' }
-  end
-
-  def db
-    @db ||= Mongo::Connection.new(test_database_options[:hostname], test_database_options[:port]).db(test_database_options[:database])
-  end
-
-  def setup_app(opts={})
-    gridfs_opts = test_database_options.merge(opts)
-    Rack::Builder.new do
-      use Rack::GridFS, gridfs_opts
-      run lambda { |env| [200, {'Content-Type' => 'text/plain'}, ["Hello, World!"]] }
-    end
-  end
-
-  def load_artifact(filename, content_type, path=nil)
-    contents = File.read(File.join(File.dirname(__FILE__), 'artifacts', filename))
-    if path
-      grid = Mongo::GridFileSystem.new(db)
-      file = [path, filename].join('/')
-      grid.open(file, 'w') { |f| f.write contents }
-      grid.open(file, 'r')
-    else      
-      Mongo::Grid.new(db).put(contents, :filename => filename, :content_type => content_type)
-    end
-  end
+  include Rack::GridFS::Test::Methods
 
   context "Rack::GridFS" do
     setup do
@@ -55,68 +24,73 @@ class Rack::GridFSTest < Test::Unit::TestCase
       end
 
       should "have a hostname option" do
-        mware = Rack::GridFS.new(nil, @options)
+        mware = Rack::GridFS::Endpoint.new(@options)
         assert_equal @options[:hostname], mware.instance_variable_get(:@hostname)
       end
 
       should "have a default hostname" do
-        mware = Rack::GridFS.new(nil, @options.except(:hostname))
+        mware = Rack::GridFS::Endpoint.new(@options.except(:hostname))
         assert_equal 'localhost', mware.instance_variable_get(:@hostname)
       end
 
       should "have a port option" do
-        mware = Rack::GridFS.new(nil, @options)
+        mware = Rack::GridFS::Endpoint.new(@options)
         assert_equal @options[:port], mware.instance_variable_get(:@port)
       end
 
       should "have a default port" do
-        mware = Rack::GridFS.new(nil, @options.except(:port))
+        mware = Rack::GridFS::Endpoint.new(@options.except(:port))
         assert_equal Mongo::Connection::DEFAULT_PORT, mware.instance_variable_get(:@port)
       end
 
       should "have a database option" do
-        mware = Rack::GridFS.new(nil, @options)
+        mware = Rack::GridFS::Endpoint.new(@options)
         assert_equal @options[:database], mware.instance_variable_get(:@database)
       end
 
       should "not have a default database" do
-        mware = Rack::GridFS.new(nil, @options.except(:database))
+        mware = Rack::GridFS::Endpoint.new(@options.except(:database))
         assert_nil mware.instance_variable_get(:@database)
       end
 
       should "have a prefix option" do
         mware = Rack::GridFS.new(nil, @options)
-        assert_equal mware.instance_variable_get(:@prefix), @options[:prefix]
+        assert_equal mware.instance_variable_get(:@options)[:prefix], 'myprefix'
       end
 
       should "have a default prefix" do
         mware = Rack::GridFS.new(nil, @options.except(:prefix))
-        assert_equal mware.instance_variable_get(:@prefix), 'gridfs'
+        assert_equal mware.instance_variable_get(:@options)[:prefix], 'gridfs'
+      end
+
+      should "have a normalize prefix" do
+        mware = Rack::GridFS.new(nil, @options.merge({:prefix => '/myprefix'}))
+        assert_equal mware.instance_variable_get(:@options)[:prefix], 'myprefix'
       end
 
       should "have a username option" do
-        mware = Rack::GridFS.new(nil, @options)
+        mware = Rack::GridFS::Endpoint.new(@options)
         assert_equal @options[:username], mware.instance_variable_get(:@username)
       end
 
       should "have a password option" do
-        mware = Rack::GridFS.new(nil, @options)
+        mware = Rack::GridFS::Endpoint.new(@options)
         assert_equal @options[:password], mware.instance_variable_get(:@password)
       end
 
       should "not have a default username" do
-        mware = Rack::GridFS.new(nil, @options.except(:username))
+        mware = Rack::GridFS::Endpoint.new(@options.except(:username))
         assert_nil mware.instance_variable_get(:@username)
       end
 
       should "not have a default password" do
-        mware = Rack::GridFS.new(nil, @options.except(:password))
+        mware = Rack::GridFS::Endpoint.new(@options.except(:password))
         assert_nil mware.instance_variable_get(:@password)
       end
 
       should "connect to the MongoDB server" do
-        Rack::GridFS.any_instance.expects(:connect!).returns(true).once
-        Rack::GridFS.new(nil, @options)
+        Rack::GridFS::Endpoint.any_instance.expects(:connect!).returns(true).once
+        Rack::GridFS::Endpoint.new(@options).db
       end
 
     end
