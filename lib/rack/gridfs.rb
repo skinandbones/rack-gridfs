@@ -1,4 +1,3 @@
-require 'timeout'
 require 'mongo'
 
 module Rack
