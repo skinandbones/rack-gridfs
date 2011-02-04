@@ -25,7 +25,7 @@ task :default => :test
 
 require 'rake/rdoctask'
 Rake::RDocTask.new do |rdoc|
-  require File.expand_path("../lib/rack/gridfs", __FILE__)
+  require File.expand_path("../lib/rack/gridfs/version", __FILE__)
 
   rdoc.rdoc_dir = 'rdoc'
   rdoc.title = "Rack::GridFS #{Rack::GridFS::VERSION}"

@@ -5,7 +5,6 @@ module Rack
   class GridFSConnectionError < StandardError ; end
 
   class GridFS
-    VERSION = "0.2.0"
 
     def initialize(app, options = {})
       options = {
