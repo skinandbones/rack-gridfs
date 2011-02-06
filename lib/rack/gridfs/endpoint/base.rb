@@ -17,14 +17,14 @@ module Rack
         def call(env)
           with_rescues do
             request = Rack::Request.new(env)
-            id      = identifier_for_path(request.path_info)
-            file    = find_file(id)
+            key     = key_for_path(request.path_info)
+            file    = find_file(key)
 
             response_for(file, request)
           end
         end
 
-        def identifier_for_path(path)
+        def key_for_path(path)
           @mapper.respond_to?(:call) ? @mapper.call(path) : path
         end
 
