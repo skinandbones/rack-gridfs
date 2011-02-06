@@ -9,6 +9,17 @@ class Rack::GridFSTest < Test::Unit::TestCase
       def app; setup_app end
     end
 
+    should "load artifacts" do
+      image_id = load_artifact('3wolfmoon.jpg', 'image/jpeg')
+
+      file1 = Mongo::Grid.new(db).get(image_id)
+      file2 = Mongo::GridFileSystem.new(db).open('3wolfmoon.jpg', "r")
+      file3 = Mongo::Grid.new(db).get(BSON::ObjectId.from_string(image_id.to_s))
+
+      assert_equal file1.filename, file2.filename
+      assert_equal file2.filename, file3.filename
+    end
+
     context "on initialization" do
 
       setup do
@@ -151,14 +162,14 @@ class Rack::GridFSTest < Test::Unit::TestCase
       should "return 304 when Etag matches" do
         image_id = load_artifact('3wolfmoon.jpg', 'image/jpeg')
         gridfile = Mongo::Grid.new(db).get(image_id)
-        get "/gridfs/3wolfmoon.jpg", nil, {'If-None-Match' => gridfile.files_id.to_s}
+        get "/gridfs/3wolfmoon.jpg", nil, {'HTTP_IF_NONE_MATCH' => gridfile.files_id.to_s}
         assert_equal 304, last_response.status
       end
       
       should "return 304 when Last-Modified matches" do
         image_id = load_artifact('3wolfmoon.jpg', 'image/jpeg')
         gridfile = Mongo::Grid.new(db).get(image_id)
-        get "/gridfs/3wolfmoon.jpg", nil, {'If-Modified-Since' => gridfile.upload_date.httpdate}
+        get "/gridfs/3wolfmoon.jpg", nil, {'HTTP_IF_MODIFIED_SINCE' => gridfile.upload_date.httpdate}
         assert_equal 304, last_response.status
         assert_equal gridfile.files_id.to_s, last_response.headers['Etag']
       end

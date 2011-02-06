@@ -11,12 +11,15 @@ module Rack
         protected
 
         def headers(file)
-          super.merge( cache_control_header(file) )
+          super.merge(
+            'Last-Modified' => file.upload_date.httpdate,
+            'Etag'          => file.files_id.to_s
+          ).merge(cache_control_header)
         end
 
         private
 
-        def cache_control_header(file)
+        def cache_control_header
           if @options[:expires]
             { "Cache-Control" => "max-age=#{@options[:expires]}, public" }
           else

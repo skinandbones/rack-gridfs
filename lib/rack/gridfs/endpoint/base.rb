@@ -16,7 +16,14 @@ module Rack
 
         def call(env)
           request = Rack::Request.new(env)
-          gridfs_request( identifier_for_path(env['PATH_INFO']), request )
+          id      = identifier_for_path(request.path_info)
+          file    = find_file(id)
+
+          response_for(file, request)
+        rescue Mongo::GridError, BSON::InvalidObjectId
+          [404, {'Content-Type' => 'text/plain'}, ['File not found.' + id]]
+        rescue Mongo::GridFileNotFound
+          [404, {'Content-Type' => 'text/plain'}, ['File not found.']]
         end
 
         def identifier_for_path(path)
@@ -29,29 +36,19 @@ module Rack
 
         protected
 
-        def gridfs_request(id, request)
-          grid = Mongo::GridFileSystem.new(db)
-          file = grid.open(id, 'r')
-          if request.env['If-None-Match'] == file.files_id.to_s || request.env['If-Modified-Since'] == file.upload_date.httpdate
-            [304, {'Content-Type' => 'text/plain', 'Etag' => file.files_id.to_s}, ['Not modified']]
-          else
-            [200, headers(file), [file.read]]
-          end
-        rescue Mongo::GridError, BSON::InvalidObjectId
-          [404, {'Content-Type' => 'text/plain'}, ['File not found.' + id]]
-        rescue Mongo::GridFileNotFound
-          [404, {'Content-Type' => 'text/plain'}, ['File not found.']]
+        def response_for(file, request)
+          [ 200, headers(file), file ]
         end
 
-        def find_file(identifier)
+        def find_file(id_or_path)
           case @lookup.to_sym
-          when :id   then Mongo::Grid.new(db).get(BSON::ObjectId.from_string(identifier))
-          when :path then Mongo::GridFileSystem.new(db).open(identifier, "r")
+          when :id   then Mongo::Grid.new(db).get(BSON::ObjectId.from_string(id_or_path))
+          when :path then Mongo::GridFileSystem.new(db).open(id_or_path, "r")
           end
         end
 
         def headers(file)
-          {'Content-Type' => file.content_type, 'Last-Modified' => file.upload_date.httpdate, 'Etag' => file.files_id.to_s}
+          { 'Content-Type' => file.content_type }
         end
 
       end

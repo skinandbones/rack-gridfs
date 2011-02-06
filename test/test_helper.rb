@@ -27,7 +27,7 @@ module Rack
         end
 
         def test_database_options
-          { :hostname => 'localhost', :port => 27017, :database => 'test', :prefix => 'gridfs' }
+          { :hostname => 'localhost', :port => 27017, :database => 'test', :prefix => 'gridfs', :lookup => :path }
         end
 
         def db
@@ -38,6 +38,7 @@ module Rack
           gridfs_opts = test_database_options.merge(opts)
 
           Rack::Builder.new do
+            use Rack::ConditionalGet
             use Rack::GridFS, gridfs_opts
             run lambda { |env| [200, {'Content-Type' => 'text/plain'}, ["Hello, World!"]] }
           end
