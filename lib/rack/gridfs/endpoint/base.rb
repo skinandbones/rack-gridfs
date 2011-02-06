@@ -15,15 +15,13 @@ module Rack
         end
 
         def call(env)
-          request = Rack::Request.new(env)
-          id      = identifier_for_path(request.path_info)
-          file    = find_file(id)
+          with_rescues do
+            request = Rack::Request.new(env)
+            id      = identifier_for_path(request.path_info)
+            file    = find_file(id)
 
-          response_for(file, request)
-        rescue Mongo::GridError, BSON::InvalidObjectId
-          [404, {'Content-Type' => 'text/plain'}, ['File not found.' + id]]
-        rescue Mongo::GridFileNotFound
-          [404, {'Content-Type' => 'text/plain'}, ['File not found.']]
+            response_for(file, request)
+          end
         end
 
         def identifier_for_path(path)
@@ -35,6 +33,14 @@ module Rack
         end
 
         protected
+
+        def with_rescues
+          yield
+        rescue Mongo::GridError, BSON::InvalidObjectId => e
+          [ 404, {'Content-Type' => 'text/plain'}, ["File not found. #{e}"] ]
+        rescue Mongo::GridFileNotFound
+          [ 404, {'Content-Type' => 'text/plain'}, ['File not found.'] ]
+        end
 
         def response_for(file, request)
           [ 200, headers(file), file ]
