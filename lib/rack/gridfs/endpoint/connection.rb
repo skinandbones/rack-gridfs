@@ -12,6 +12,13 @@ module Rack
             @options.values_at(:hostname, :port, :database, :username, :password)
         end
 
+        def default_options
+          super.merge({
+            :hostname => 'localhost',
+            :port     => Mongo::Connection::DEFAULT_PORT
+          })
+        end
+
         def db
           @db ||= (super || connect!)
         end

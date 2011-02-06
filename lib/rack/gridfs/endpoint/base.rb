@@ -4,11 +4,7 @@ module Rack
       module Base
 
         def initialize(options = {})
-          @options = {
-            :hostname => 'localhost',
-            :port     => Mongo::Connection::DEFAULT_PORT,
-            :lookup   => :id
-          }.merge(options)
+          @options = default_options.merge(options)
 
           @lookup = @options[:lookup]
           @mapper = @options[:mapper]
@@ -33,6 +29,10 @@ module Rack
         end
 
         protected
+
+        def default_options
+          { :lookup => :id }
+        end
 
         def with_rescues
           yield
