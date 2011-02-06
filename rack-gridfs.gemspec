@@ -16,6 +16,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency('rack')
   s.add_dependency('mongo', '~> 1.2')
+  s.add_dependency('mime-types')
 
   s.add_development_dependency('bundler', '>= 1.0.0')
   s.add_development_dependency('mocha', '0.9.4')

@@ -1,4 +1,5 @@
 require 'mongo'
+require 'mime/types'
 
 module Rack
   class GridFSConnectionError < StandardError ; end
