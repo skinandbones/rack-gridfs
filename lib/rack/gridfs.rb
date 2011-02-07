@@ -4,6 +4,20 @@ require 'mime/types'
 module Rack
   class GridFSConnectionError < StandardError ; end
 
+  # Rack middleware that will serve GridFS files from a specified path prefix.
+  # By default the prefix is stripped from the path before file lookup in
+  # GridFS occurs.
+  #
+  # For example:
+  #
+  #     "/gridfs/filename.png" -> "filename.png"
+  #
+  # If you are using Rails you can mount the endpoint directly.
+  #
+  # For example (in config/routes.rb):
+  #
+  #     mount Rack::GridFS::Endpoint, :at => "gridfs"
+
   class GridFS
     autoload :Endpoint, "rack/gridfs/endpoint"
 

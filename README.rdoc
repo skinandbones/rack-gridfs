@@ -11,15 +11,27 @@ For example,
 
 If the prefix is "gridfs", then the id will be be "someobjectid".
 
+You can also use Rack::GridFS::Endpoint as a rack endpoint if you want to
+handle routing another way
+
 == Mongo Driver Compatibility Notes
 
-This version is currently based on mongo-1.1+. As there were significant changes
+This version is currently based on mongo-1.2+. As there were significant changes
 to the GridFS API prior to v1.0, you may have luck with the git-tagged version
 0.2.0 of this library with earlier versions of the driver.
 
 == Installation
 
   gem install rack-gridfs
+
+== Features
+- Use as rack middleware or mount as a rack endpoint
+- File lookup using a path or object id
+- Chunked transfer encoding, keeps memory usage low
+- Content-Type header set using 'mime-types' gem
+- Last-Modified and Etag headers set automatically for conditional get support
+- Cache-Control header support
+- High availability when using replication sets
 
 == Usage
 
@@ -38,6 +50,9 @@ You must also specify MongoDB database details:
 - +database+: the name of the MongoDB database to connect to.
 - +username+ and +password+: if you need to authenticate to MongoDB.
 
+Alternatively you can pass in a <tt>Mongo::DB</tt> instance instead:
+- +db+: MongoMapper.database, or Mongoid.database for example.
+
 === Simple Sinatra Example
 
   require 'rubygems'
@@ -50,7 +65,7 @@ You must also specify MongoDB database details:
     "The URL did not match a file in GridFS."
   end
 
-=== Usage with Rails
+=== Usage with Rails 2
 
 To use <tt>Rack::GridFS</tt> in a Rails application, add it as middleware in
 <tt>application.rb</tt> or <tt>config/environments/*</tt>with something like this:
@@ -62,6 +77,13 @@ Run <tt>rake middleware</tt> to decide for yourself where to best place it in
 the middleware stack for your app using {the Rails convenience methods}[http://guides.rubyonrails.org/rails_on_rack.html#configuring-middleware-stack],
 taking into consideration that it can probably be near the top since it simply
 returns a "static" file or a 404.
+
+=== Usage with Rails 3
+
+To use in Rails 3, you can insert into the middleware stack or mount the app
+directly in your routes (recommended). In config/routes.rb:
+
+  mount Rack::GridFS::Endpoint, :at => "gridfs"
 
 === Path (filename) Lookup
 
