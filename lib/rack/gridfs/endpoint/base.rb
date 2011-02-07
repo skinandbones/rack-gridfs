@@ -2,10 +2,12 @@ module Rack
   class GridFS
     class Endpoint
       module Base
+        attr_reader :db
 
         def initialize(options = {})
           @options = default_options.merge(options)
 
+          @db     = @options[:db]
           @lookup = @options[:lookup]
           @mapper = @options[:mapper]
         end
@@ -24,10 +26,6 @@ module Rack
           @mapper.respond_to?(:call) ? @mapper.call(path) : path
         end
 
-        def db
-          @options[:db]
-        end
-
         protected
 
         def default_options
@@ -35,11 +33,23 @@ module Rack
         end
 
         def with_rescues
-          yield
-        rescue Mongo::GridError, BSON::InvalidObjectId => e
+          rescue_connection_failure { yield }
+        rescue Mongo::GridFileNotFound, BSON::InvalidObjectId => e
           [ 404, {'Content-Type' => 'text/plain'}, ["File not found. #{e}"] ]
-        rescue Mongo::GridFileNotFound
-          [ 404, {'Content-Type' => 'text/plain'}, ['File not found.'] ]
+        rescue Mongo::GridError => e
+          [ 500, {'Content-Type' => 'text/plain'}, ["An error occured. #{e}"] ]
+        end
+
+        def rescue_connection_failure(max_retries=60)
+          retries = 0
+          begin
+            yield
+          rescue Mongo::ConnectionFailure => e
+            retries += 1
+            raise e if retries > max_retries
+            sleep(0.5)
+            retry
+          end
         end
 
         def response_for(file, request)
