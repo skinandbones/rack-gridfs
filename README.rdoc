@@ -80,10 +80,14 @@ returns a "static" file or a 404.
 
 === Usage with Rails 3
 
-To use in Rails 3, you can insert into the middleware stack or mount the app
-directly in your routes (recommended). In config/routes.rb:
+To use in Rails 3, you can insert into the middleware stack as above, or mount
+the app directly in your routes (recommended). In <tt>config/routes.rb</tt>:
 
   mount Rack::GridFS::Endpoint, :at => "gridfs"
+
+This allows for much more straightforward and sensible configuration, if you do
+not require other middleware in front of GridFS (Rack-based authorization, for
+instance).
 
 === Path (filename) Lookup
 
