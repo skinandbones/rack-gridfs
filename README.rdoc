@@ -147,4 +147,4 @@ these files as such:
 
 == Copyright
 
-Copyright (c) 2010 Blake Carlson. See LICENSE for details.
+Copyright (c) 2010-2011 Blake Carlson. See LICENSE for details.
