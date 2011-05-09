@@ -40,7 +40,7 @@ module Rack
       options.tap do |opts|
         opts[:prefix] ||= "gridfs"
         opts[:prefix].gsub!(/^\//, '')
-        opts[:mapper] ||= lambda { |p| p[%r{^/#{options[:prefix]}/(.+)}, 1] }
+        opts[:mapper] ||= lambda { |path| %r!^/#{options[:prefix]}/(.+)!.match(path)[1] }
       end
     end
 
