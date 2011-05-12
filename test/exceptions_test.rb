@@ -7,7 +7,7 @@ class ExceptionsTest < Test::Unit::TestCase
   context "Rack::GridFS Exceptions" do
     setup do
       def app
-        setup_app(:lookup => :path)
+        setup_middleware(:lookup => :path)
       end
 
       @text_file = load_artifact('test.txt', nil)

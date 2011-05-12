@@ -1,5 +1,3 @@
-require 'rubygems'
-require 'bundler/setup'
 require 'test/unit'
 require 'shoulda'
 require 'mocha'
@@ -27,20 +25,34 @@ module Rack
         end
 
         def test_database_options
-          { :hostname => 'localhost', :port => 27017, :database => 'test', :prefix => 'gridfs', :lookup => :path }
+          { :hostname => 'localhost', :port => 27017, :database => 'test', :prefix => 'gridfs' }
         end
 
         def db
           @db ||= Mongo::Connection.new(test_database_options[:hostname], test_database_options[:port]).db(test_database_options[:database])
         end
 
-        def setup_app(opts={})
+        def setup_middleware(opts={})
           gridfs_opts = test_database_options.merge(opts)
 
           Rack::Builder.new do
             use Rack::ConditionalGet
             use Rack::GridFS, gridfs_opts
             run lambda { |env| [200, {'Content-Type' => 'text/plain'}, ["Hello, World!"]] }
+          end
+        end
+
+        def setup_endpoint(opts={})
+          endpoint_opts = test_database_options.except(:prefix).merge(opts)
+
+          Rack::Builder.new do
+            use Rack::ConditionalGet
+            map '/gridfs' do
+              run Rack::GridFS::Endpoint.new(endpoint_opts)
+            end
+            map '/' do
+              run lambda { |env| [200, {'Content-Type' => 'text/plain'}, ["Hello, World!"]] }
+            end
           end
         end
 
@@ -51,7 +63,7 @@ module Rack
             file = [path, filename].join('/')
             grid.open(file, 'w') { |f| f.write contents }
             grid.open(file, 'r')
-          else      
+          else
             Mongo::Grid.new(db).put(contents, :filename => filename, :content_type => content_type)
           end
         end

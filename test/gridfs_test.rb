@@ -1,12 +1,13 @@
 require 'test_helper'
 require 'pp'
+
 class Rack::GridFSTest < Test::Unit::TestCase
   include Rack::Test::Methods
   include Rack::GridFS::Test::Methods
 
   context "Rack::GridFS" do
     setup do
-      def app; setup_app end
+      def app; setup_middleware end
     end
 
     should "load artifacts" do
@@ -30,7 +31,6 @@ class Rack::GridFSTest < Test::Unit::TestCase
 
     context "for lookup by ObjectId" do
       setup do
-        def app; setup_app(:lookup => :id) end
         @text_id = load_artifact('test.txt', 'text/plain')
         @html_id = load_artifact('test.html', 'text/html')
       end
@@ -68,7 +68,7 @@ class Rack::GridFSTest < Test::Unit::TestCase
 
     context "for lookup by filename" do
       setup do
-        def app; setup_app(:lookup => :path) end
+        def app; setup_middleware(:lookup => :path) end
         @text_file = load_artifact('test.txt', nil, path='text')
         @html_file = load_artifact('test.html', nil, path='html')
       end
@@ -110,6 +110,60 @@ class Rack::GridFSTest < Test::Unit::TestCase
       end
     end
 
+  end
+
+  context "Rack::GridFS::Endpoint" do
+    context "for lookup by ObjectId" do
+      setup do
+        def app; setup_endpoint end
+        @text_id = load_artifact('test.txt', 'text/plain')
+      end
+
+      teardown do
+        db.collection('fs.files').remove
+      end
+
+      should "return TXT files stored in GridFS" do
+        get "/gridfs/#{@text_id}"
+        assert_equal "Lorem ipsum dolor sit amet.", last_response.body
+      end
+
+      should "return a not found for a unknown object" do
+        get '/gridfs/unknown'
+        assert last_response.not_found?
+      end
+
+      should "return the proper content type for TXT files" do
+        get "/gridfs/#{@text_id}"
+        assert_equal 'text/plain', last_response.content_type
+      end
+    end
+
+    context "for lookup by filename" do
+      setup do
+        def app; setup_endpoint(:lookup => :path) end
+        @text_file = load_artifact('test.txt', nil, path='text')
+      end
+
+      teardown do
+        db.collection('fs.files').remove
+      end
+
+      should "return TXT files stored in GridFS" do
+        get "/gridfs/#{@text_file.filename}"
+        assert_equal "Lorem ipsum dolor sit amet.", last_response.body
+      end
+
+      should "return the proper content type for TXT files" do
+        get "/gridfs/#{@text_file.filename}"
+        assert_equal 'text/plain', last_response.content_type
+      end
+
+      should "return a not found for a unknown path" do
+        get '/gridfs/unknown'
+        assert last_response.not_found?
+      end
+    end
   end
 
 end

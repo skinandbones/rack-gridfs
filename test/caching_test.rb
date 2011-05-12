@@ -7,7 +7,7 @@ class CachingTest < Test::Unit::TestCase
   context "Rack::GridFS::Endpoint::Caching" do
     setup do
       def app
-        setup_app(:lookup => :path, :expires => 1800)
+        setup_endpoint(:lookup => :path, :expires => 1800)
       end
 
       @text_file = load_artifact('test.txt', nil, path='text')

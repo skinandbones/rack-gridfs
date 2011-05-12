@@ -36,6 +36,7 @@ module Rack
 
     private
 
+    # TODO: doc explanation/example of custom mapper
     def normalize_options(options)
       options.tap do |opts|
         opts[:prefix] ||= "gridfs"

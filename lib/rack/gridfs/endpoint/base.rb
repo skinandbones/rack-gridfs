@@ -29,7 +29,10 @@ module Rack
         protected
 
         def default_options
-          { :lookup => :id }
+          {
+            :lookup => :id,
+            :mapper => lambda { |path| %r!/(.+)!.match(path)[1] }
+          }
         end
 
         def with_rescues

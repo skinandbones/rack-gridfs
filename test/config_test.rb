@@ -15,7 +15,8 @@ class ConfigTest < Test::Unit::TestCase
           :database => 'mydatabase',
           :prefix => 'myprefix',
           :username => 'bob',
-          :password => 'so-s3cur3'
+          :password => 'so-s3cur3',
+          :mapper => lambda { |path| %r{^/files/myprefix/(.+)}.match(path)[1] }
         }
       end
 
@@ -59,7 +60,7 @@ class ConfigTest < Test::Unit::TestCase
         assert_equal mware.instance_variable_get(:@options)[:prefix], 'gridfs'
       end
 
-      should "have a normalize prefix" do
+      should "have a normalized prefix" do
         mware = Rack::GridFS.new(nil, @options.merge({:prefix => '/myprefix'}))
         assert_equal mware.instance_variable_get(:@options)[:prefix], 'myprefix'
       end
@@ -82,6 +83,16 @@ class ConfigTest < Test::Unit::TestCase
       should "not have a default password" do
         mware = Rack::GridFS::Endpoint.new(@options.except(:password))
         assert_nil mware.instance_variable_get(:@password)
+      end
+
+      should "have a mapper option" do
+        mware = Rack::GridFS::Endpoint.new(@options)
+        assert_equal @options[:mapper], mware.instance_variable_get(:@mapper)
+      end
+
+      should "have a default mapper" do
+        mware = Rack::GridFS::Endpoint.new(@options.except(:mapper))
+        assert_not_nil mware.instance_variable_get(:@options)[:mapper]
       end
 
       should "connect to the MongoDB server" do
