@@ -1,57 +1,52 @@
-require 'timeout'
 require 'mongo'
+require 'mime/types'
 
 module Rack
-  
   class GridFSConnectionError < StandardError ; end
-  
+
+  # Rack middleware that will serve GridFS files from a specified path prefix.
+  # By default the prefix is stripped from the path before file lookup in
+  # GridFS occurs.
+  #
+  # For example:
+  #
+  #     "/gridfs/filename.png" -> "filename.png"
+  #
+  # If you are using Rails you can mount the endpoint directly.
+  #
+  # For example (in config/routes.rb):
+  #
+  #     mount Rack::GridFS::Endpoint, :at => "gridfs"
+
   class GridFS
+    autoload :Endpoint, "rack/gridfs/endpoint"
 
-    attr_reader :hostname, :port, :database, :prefix, :db
-    
-    def initialize(app, options = {})
-      options = {
-        :hostname => 'localhost', 
-        :prefix   => 'gridfs',
-        :port     => Mongo::Connection::DEFAULT_PORT
-      }.merge(options)
-
-      @app        = app
-      @hostname   = options[:hostname]
-      @port       = options[:port]
-      @database   = options[:database]
-      @prefix     = options[:prefix]
-      @db         = nil
-
-      connect!
+    def initialize(app, options={})
+      @app     = app
+      @options = normalize_options(options)
     end
 
     def call(env)
-      request = Rack::Request.new(env)
-      if request.path_info =~ /^\/#{prefix}\/(.+)$/
-        gridfs_request($1)
+      if env['PATH_INFO'] =~ %r{^/#{@options[:prefix]}/*}
+        endpoint.call(env)
       else
         @app.call(env)
       end
     end
 
-    def gridfs_request(id)
-      file = Mongo::Grid.new(db).get(BSON::ObjectID.from_string(id))
-      [200, {'Content-Type' => file.content_type}, [file.read]]
-    rescue Mongo::GridError, BSON::InvalidObjectID
-      [404, {'Content-Type' => 'text/plain'}, ['File not found.']]
-    end
-    
     private
-    
-    def connect!
-      Timeout::timeout(5) do
-        @db = Mongo::Connection.new(hostname).db(database)
+
+    # TODO: doc explanation/example of custom mapper
+    def normalize_options(options)
+      options.tap do |opts|
+        opts[:prefix] ||= "gridfs"
+        opts[:prefix].gsub!(/^\//, '')
+        opts[:mapper] ||= lambda { |path| %r!^/#{options[:prefix]}/(.+)!.match(path)[1] }
       end
-    rescue Exception => e
-      raise Rack::GridFSConnectionError, "Unable to connect to the MongoDB server (#{e.to_s})"
     end
-    
+
+    def endpoint
+      @endpoint ||= Endpoint.new(@options)
+    end
   end
-    
 end

@@ -2,53 +2,149 @@
 
 Rack:GridFS is a Rack middleware for creating HTTP endpoints for files
 stored in MongoDB's GridFS.  You can configure a prefix string which
-will be used to match the path of a request and supply an id for looking
-up the file in the GridFS store.
+will be used to match the path of a request, and further look up GridFS
+files based on either their +ObjectId+ or +filename+ field.
 
 For example,
 
   GET '/gridfs/someobjectid'
-  
+
 If the prefix is "gridfs", then the id will be be "someobjectid".
+
+You can also use Rack::GridFS::Endpoint as a rack endpoint if you want to
+handle routing another way
 
 == Mongo Driver Compatibility Notes
 
-This version is currently based off of mongo-0.20.1.  
-
-As of mongo-0.19.1, there have been significant changes to GridFS.  I do
-not plan to support versions of the mongo driver prior to 0.19.  There are
-some compatibility issues with mongo-0.19 vs. mongo-0.20 (Mongo::ObjectID
-vs. BSON::ObjectID).  For now, I am choosing to support mongo-0.20.
+This version is currently based on mongo-1.2+. As there were significant changes
+to the GridFS API prior to v1.0, you may have luck with the git-tagged version
+0.2.0 of this library with earlier versions of the driver.
 
 == Installation
 
-  sudo gem install skinandbones-rack-gridfs --source=http://gems.github.com
+  gem install rack-gridfs
+
+== Features
+- Use as rack middleware or mount as a rack endpoint
+- File lookup using a path or object id
+- Chunked transfer encoding, keeps memory usage low
+- Content-Type header set using 'mime-types' gem
+- Last-Modified and Etag headers set automatically for conditional get support
+- Cache-Control header support
+- High availability when using replication sets
 
 == Usage
 
   require 'rack/gridfs'
-  use Rack::GridFS, :hostname => 'localhost', :port => 27017, :database => 'test', :prefix => 'gridfs'
+  use Rack::GridFS, :prefix => 'gridfs', :hostname => 'localhost', :port => 27017, :database => 'test'
 
-You must specify MongoDB database details:
-- hostname: the hostname/IP where the MongoDB server is running.  Default 'localhost'.
-- port: the port of the MongoDB server.  Default 27017.
-- database: the MongoDB database to connect to.
-- prefix: a string used to match against incoming paths and route to through the middleware.  Default 'gridfs'.
+Options:
+- +prefix+: a string used to match against incoming paths and route to through
+  the middleware.  Default 'gridfs'.
+- +lookup+: whether to look up a file based on <tt>:id</tt> or <tt>:path</tt>
+  (example below).  Default is <tt>:id</tt>.
 
-== Sinatra Example
+You must also specify MongoDB database details:
+- +hostname+: the hostname/IP where the MongoDB server is running.  Default 'localhost'.
+- +port+: the port of the MongoDB server.  Default 27017.
+- +database+: the name of the MongoDB database to connect to.
+- +username+ and +password+: if you need to authenticate to MongoDB.
 
-  # TODO: THIS COULD USE A LOT MORE EXPLANATION!
+Alternatively you can pass in a <tt>Mongo::DB</tt> instance instead:
+- +db+: MongoMapper.database, or Mongoid.database for example.
+
+=== Simple Sinatra Example
 
   require 'rubygems'
   require 'sinatra'
 
   require 'rack/gridfs'
-  use Rack::GridFS, :hostname => 'localhost', :port => 27017, :database => 'test', :prefix => 'gridfs'
+  use Rack::GridFS, :database => 'test', :prefix => 'gridfs'
 
   get /.*/ do
     "The URL did not match a file in GridFS."
   end
 
+=== Usage with Rails 2
+
+To use <tt>Rack::GridFS</tt> in a Rails application, add it as middleware in
+<tt>application.rb</tt> or <tt>config/environments/*</tt>with something like this:
+
+  config.middleware.insert_after Rack::Runtime, Rack::GridFS,
+    :prefix => 'uploads', :database => "my_app_#{Rails.env}"
+
+Run <tt>rake middleware</tt> to decide for yourself where to best place it in
+the middleware stack for your app using {the Rails convenience methods}[http://guides.rubyonrails.org/rails_on_rack.html#configuring-middleware-stack],
+taking into consideration that it can probably be near the top since it simply
+returns a "static" file or a 404.
+
+=== Usage with Rails 3
+
+To use in Rails 3, you can insert into the middleware stack as above, or mount
+the app directly in your routes (recommended). In <tt>config/routes.rb</tt>:
+
+  mount Rack::GridFS::Endpoint.new(:db => Mongoid.database), :at => "gridfs"
+
+This allows for much more straightforward and sensible configuration, if you do
+not require other middleware in front of GridFS (Rack-based authorization, for
+instance).
+
+=== Path (filename) Lookup
+
+The <tt>:lookup => :path</tt> option causes files to be looked up from the GridFS
+store based on their +filename+ field (which can be a full file path) rather than
++ObjectId+ (requests still need to match the +prefix+ you've set). This allows
+you to find files based on essentially arbitrary URLs such as:
+
+    GET '/prefix/media/images/jane_avatar.jpg'
+
+How filenames are set is specific to your application. We'll look at an example
+with Carrierwave below.
+
+*NOTE*: The Mongo Ruby driver will try to create an index on the +filename+
+field for you automatically, but if you are using filename lookup you'll want to
+double-check that it is created appropriately (on slaves only if you have a
+master-slave architecture, etc.).
+
+=== Carrierwave Example
+
+Path lookup works well for usage with Carrierwave[https://github.com/jnicklas/carrierwave].
+As a minimal example with Mongoid:
+
+  # config/initializers/carrierwave.rb
+  CarrierWave.configure do |config|
+    config.storage = :grid_fs
+    config.grid_fs_connection = Mongoid.database
+    config.grid_fs_access_url = "/uploads"
+  end
+
+  # app/uploaders/avatar_uploader.rb
+  class AvatarUploader < CarrierWave::Uploader::Base
+    # (Virtual) path where uploaded files will be stored, appended to the
+    # gridfs_access_url by methods used with view helpers
+    def store_dir
+      "#{model.class.to_s.underscore}/#{mounted_as}/#{model.id}"
+    end
+  end
+
+  # app/models/user.rb
+  class User
+    include Mongoid::Document
+    mount_uploader :avatar, AvatarUploader
+  end
+
+  # app/views/user/show.html.erb
+  <%= image_tag(@user.avatar.url) if @user.avatar? %>
+
+This will result in URL paths like <tt>/uploads/user/avatar/4d250d04a8f41c0a31000006/original_filename.jpg</tt>
+being generated for the view helpers, and Carrierwave will store
+<tt>user/avatar/4d250d04a8f41c0a31000006/original_filename.jpg</tt> as the
++filename+ in GridFS. Thus, you can configure <tt>Rack::GridFS</tt> to serve
+these files as such:
+
+  config.middleware.insert_after Rack::Runtime, Rack::GridFS,
+    :prefix => 'uploads', :lookup => :path, :database => "my_app_#{Rails.env}"
+
 == Copyright
 
-Copyright (c) 2010 Blake Carlson. See LICENSE for details.
+Copyright (c) 2010-2011 Blake Carlson. See LICENSE for details.

@@ -1,0 +1,31 @@
+== CHANGE LOG
+
+=== 0.4.0dev / unreleased
+
+Major refactoring and loads of new features! Thanks to {Ben Marini}[https://github.com/bmarini]
+for his substantial contributions to this release.
+
+{full commit log}[https://github.com/skinandbones/rack-gridfs/compare/v0.2.0...v0.4.0]
+
+==== Features
+
+- Allow configuration of MongoDB authentication (Steve Sloan)
+- Allow option to look up objects by GridFS filename instead of +ObjectId+
+  (SHIBATA Hiroshi)
+- Return iterable GridIO object instead of file contents, so Rack can stream in
+  chunks (Ches Martin)
+- <tt>Rack::GridFS::Endpoint</tt>: support for mounting as a Rack endpoint in
+  addition to middleware (Ben Marini)
+- Cache headers: set <tt>Last-Modified</tt> and +Etag+ so that
+  <tt>Rack::ConditionalGet</tt> sends 304s. +expires+ option to set
+  <tt>Cache-Control</tt> (Alexander Gräfe & Ben Marini)
+- <tt>mime-types</tt> dependency so GridFS lib can determine content types
+  (Ben Marini)
+- You can now pass a <tt>Mongo::DB</tt> instance instead of discrete database
+  configuration parameters. Connections are retried so we take advantage of a
+  +ReplSetConnection+ in high-availability architectures (Ben Marini)
+
+==== Bug Fixes
+
+- <tt>BSON::ObjectID</tt> renamed to +ObjectId+, and other changes supporting
+  current versions of Mongo libraries
