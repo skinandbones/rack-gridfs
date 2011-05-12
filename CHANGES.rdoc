@@ -1,6 +1,6 @@
 == CHANGE LOG
 
-=== 0.4.0dev / unreleased
+=== 0.4.0 / May 12, 2011
 
 Major refactoring and loads of new features! Thanks to {Ben Marini}[https://github.com/bmarini]
 for his substantial contributions to this release.
