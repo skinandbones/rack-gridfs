@@ -23,6 +23,7 @@ module Rack
         end
 
         def key_for_path(path)
+          path = CGI::unescape(path)
           @mapper.respond_to?(:call) ? @mapper.call(path) : path
         end
 
