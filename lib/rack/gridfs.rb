@@ -1,5 +1,6 @@
 require 'mongo'
 require 'mime/types'
+require 'cgi'
 
 module Rack
   class GridFSConnectionError < StandardError ; end
