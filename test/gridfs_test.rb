@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'test_helper'
 require 'pp'
 
@@ -157,6 +159,12 @@ class Rack::GridFSTest < Test::Unit::TestCase
       should "return the proper content type for TXT files" do
         get "/gridfs/#{@text_file.filename}"
         assert_equal 'text/plain', last_response.content_type
+      end
+
+      should "return TXT with non-ascii filename files stored in GridFS" do
+        @rus_text_file = load_artifact('тест.txt', nil, path='text')
+        get "/gridfs/#{CGI::escape(@rus_text_file.filename)}"
+        assert_equal "Lorem ipsum dolor sit amet.", last_response.body
       end
 
       should "return a not found for a unknown path" do
