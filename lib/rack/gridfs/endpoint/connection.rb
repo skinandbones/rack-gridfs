@@ -8,8 +8,8 @@ module Rack
         def initialize(*)
           super
 
-          @hostname, @port, @database, @username, @password =
-            @options.values_at(:hostname, :port, :database, :username, :password)
+          @hostname, @port, @database, @username, @password, @uri =
+            @options.values_at(:hostname, :port, :database, :username, :password, :uri)
         end
 
         def default_options
@@ -29,8 +29,12 @@ module Rack
           database = nil
 
           Timeout::timeout(5) do
-            database = Mongo::Connection.new(@hostname, @port).db(@database)
-            database.authenticate(@username, @password) if @username
+            if @uri
+              database = Mongo::Connection.from_uri(@uri)
+            else
+              database = Mongo::Connection.new(@hostname, @port).db(@database)
+              database.authenticate(@username, @password) if @username
+            end
           end
 
           return database
