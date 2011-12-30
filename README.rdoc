@@ -44,7 +44,10 @@ Options:
 - +lookup+: whether to look up a file based on <tt>:id</tt> or <tt>:path</tt>
   (example below).  Default is <tt>:id</tt>.
 
-You must also specify MongoDB database details:
+You must also specify MongoDB database uri:
+- +uri+: mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
+
+.. or MongoDB database details:
 - +hostname+: the hostname/IP where the MongoDB server is running.  Default 'localhost'.
 - +port+: the port of the MongoDB server.  Default 27017.
 - +database+: the name of the MongoDB database to connect to.
