@@ -74,6 +74,10 @@ module Rack
           assert_equal_header cache_control, "Cache-Control"
         end
 
+        def assert_content_disposition(content_disposition)
+          assert_equal_header content_disposition, "Content-Disposition"
+        end
+
         def assert_equal_header(expected, header)
           assert_equal expected, last_response.headers[header]
         end

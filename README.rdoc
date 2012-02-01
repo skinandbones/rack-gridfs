@@ -3,7 +3,7 @@
 Rack:GridFS is a Rack middleware for creating HTTP endpoints for files
 stored in MongoDB's GridFS.  You can configure a prefix string which
 will be used to match the path of a request, and further look up GridFS
-files based on either their +ObjectId+ or +filename+ field.
+files based on either their +id+ or +filename+ field.
 
 For example,
 
@@ -31,6 +31,7 @@ to the GridFS API prior to v1.0, you may have luck with the git-tagged version
 - Content-Type header set using 'mime-types' gem
 - Last-Modified and Etag headers set automatically for conditional get support
 - Cache-Control header support
+- Content-Disposition header support
 - High availability when using replication sets
 
 == Usage
@@ -43,6 +44,8 @@ Options:
   the middleware.  Default 'gridfs'.
 - +lookup+: whether to look up a file based on <tt>:id</tt> or <tt>:path</tt>
   (example below).  Default is <tt>:id</tt>.
+- +disposition+: content disposition http header type which is <tt>:attachment</tt> or <tt>:inline</tt>.
+   Default is <tt>:inline</tt>.
 
 You must also specify MongoDB database details:
 - +hostname+: the hostname/IP where the MongoDB server is running.  Default 'localhost'.
