@@ -56,7 +56,7 @@ module Rack
           end
         end
 
-        def load_artifact(filename, content_type, path=nil)
+        def load_artifact(filename, content_type, path=nil, _id=nil)
           contents = ::File.read(::File.join(::File.dirname(__FILE__), 'artifacts', filename))
           if path
             grid = Mongo::GridFileSystem.new(db)
@@ -64,7 +64,9 @@ module Rack
             grid.open(file, 'w') { |f| f.write contents }
             grid.open(file, 'r')
           else
-            Mongo::Grid.new(db).put(contents, :filename => filename, :content_type => content_type)
+            options = {:filename => filename, :content_type => content_type}
+            options.merge!(:_id => _id) if _id
+            Mongo::Grid.new(db).put(contents, options)
           end
         end
 
