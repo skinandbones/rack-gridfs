@@ -1,15 +1,24 @@
 == CHANGE LOG
 
-=== dev
+=== 0.4.2 / February 2, 2012
+
+{full commit log}[https://github.com/ochko/rack-gridfs/compare/v0.4.1...v0.4.2]
 
 ==== Features
 
-- Eliminate need for <tt>:require</tt> option in Gemfile (Konstantin Shabanov)
+- Support for Content-Disposition http header
 
+==== Bug Fixes
+
+- Files could have been stored with natural object id as well as <tt>BSON::ObjectId</tt>
 
 === 0.4.1 / June 26, 2011
 
 {full commit log}[https://github.com/skinandbones/rack-gridfs/compare/v0.4.0...v0.4.1]
+
+==== Features
+
+- Eliminate need for <tt>:require</tt> option in Gemfile (Konstantin Shabanov)
 
 ==== Bug Fixes
 
