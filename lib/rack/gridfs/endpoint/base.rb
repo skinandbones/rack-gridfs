@@ -62,11 +62,16 @@ module Rack
         def find_file(id_or_path)
           case @lookup.to_sym
           when :id
-            Mongo::Grid.new(db).get(BSON::ObjectId.from_string(id_or_path))
+            id = id_for_query(id_or_path)
+            Mongo::Grid.new(db).get(id)
           when :path
             path = CGI::unescape(id_or_path)
             Mongo::GridFileSystem.new(db).open(path, "r")
           end
+        end
+
+        def id_for_query(id)
+          BSON::ObjectId.legal?(id) ? BSON::ObjectId.from_string(id) : id
         end
 
         def headers(file)

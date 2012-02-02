@@ -68,6 +68,40 @@ class Rack::GridFSTest < Test::Unit::TestCase
 
     end
 
+    context "for lookup by natural id" do
+      setup do
+      end
+
+      teardown do
+        db.collection('fs.files').remove
+        db.collection('fs.chunks').remove
+      end
+
+      should "return TXT files stored in GridFS" do
+        text_id = load_artifact('test.txt', 'text/plain', nil, "natural-uniq-id-for-text-1")
+        get "/gridfs/#{text_id}"
+        assert_equal "Lorem ipsum dolor sit amet.", last_response.body
+      end
+
+      should "return the proper content type for TXT files" do
+        text_id = load_artifact('test.txt', 'text/plain', nil, "natural-uniq-id-for-text-2")
+        get "/gridfs/#{text_id}"
+        assert_equal 'text/plain', last_response.content_type
+      end
+
+      should "return HTML files stored in GridFS" do
+        html_id = load_artifact('test.html', 'text/html', nil, "natural-uniq-id-for-html-3")
+        get "/gridfs/#{html_id}"
+        assert_match /html.*?body.*Test/m, last_response.body
+      end
+
+      should "return the proper content type for HTML files" do
+        html_id = load_artifact('test.html', 'text/html', nil, "natural-uniq-id-for-html-4")
+        get "/gridfs/#{html_id}"
+        assert_equal 'text/html', last_response.content_type
+      end
+    end
+
     context "for lookup by filename" do
       setup do
         def app; setup_middleware(:lookup => :path) end
@@ -77,6 +111,7 @@ class Rack::GridFSTest < Test::Unit::TestCase
 
       teardown do
         db.collection('fs.files').remove
+        db.collection('fs.chunks').remove
       end
 
       should "return TXT files stored in GridFS" do
@@ -141,6 +176,34 @@ class Rack::GridFSTest < Test::Unit::TestCase
       end
     end
 
+    context "for lookup by natural id" do
+      setup do
+        def app; setup_endpoint end
+      end
+
+      teardown do
+        db.collection('fs.files').remove
+        db.collection('fs.chunks').remove
+      end
+
+      should "return TXT files stored in GridFS" do
+        text_id = load_artifact('test.txt', 'text/plain', nil, 'natural-uniq-id-for-text-5')
+        get "/gridfs/#{text_id}"
+        assert_equal "Lorem ipsum dolor sit amet.", last_response.body
+      end
+
+      should "return a not found for a unknown object" do
+        get '/gridfs/unknown'
+        assert last_response.not_found?
+      end
+
+      should "return the proper content type for TXT files" do
+        text_id = load_artifact('test.txt', 'text/plain', nil, 'natural-uniq-id-for-text-6')
+        get "/gridfs/#{text_id}"
+        assert_equal 'text/plain', last_response.content_type
+      end
+    end
+
     context "for lookup by filename" do
       setup do
         def app; setup_endpoint(:lookup => :path) end
@@ -149,6 +212,7 @@ class Rack::GridFSTest < Test::Unit::TestCase
 
       teardown do
         db.collection('fs.files').remove
+        db.collection('fs.chunks').remove
       end
 
       should "return TXT files stored in GridFS" do

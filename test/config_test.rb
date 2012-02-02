@@ -14,6 +14,7 @@ class ConfigTest < Test::Unit::TestCase
           :port => 8765,
           :database => 'mydatabase',
           :prefix => 'myprefix',
+          :disposition => :inline,
           :username => 'bob',
           :password => 'so-s3cur3',
           :mapper => lambda { |path| %r{^/files/myprefix/(.+)}.match(path)[1] }
@@ -93,6 +94,11 @@ class ConfigTest < Test::Unit::TestCase
       should "have a default mapper" do
         mware = Rack::GridFS::Endpoint.new(@options.except(:mapper))
         assert_not_nil mware.instance_variable_get(:@options)[:mapper]
+      end
+
+      should "have a disposition option" do
+        mware = Rack::GridFS.new(nil, @options)
+        assert_equal mware.instance_variable_get(:@options)[:disposition], :inline
       end
 
       should "connect to the MongoDB server" do
