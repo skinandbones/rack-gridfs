@@ -7,9 +7,10 @@ module Rack
         def initialize(options = {})
           @options = default_options.merge(options)
 
-          @db     = @options[:db]
-          @lookup = @options[:lookup]
-          @mapper = @options[:mapper]
+          @db      = @options[:db]
+          @lookup  = @options[:lookup]
+          @mapper  = @options[:mapper]
+          @fs_name = @options[:fs_name]
         end
 
         def call(env)
@@ -31,7 +32,8 @@ module Rack
         def default_options
           {
             :lookup => :id,
-            :mapper => lambda { |path| %r!/(.+)!.match(path)[1] }
+            :mapper => lambda { |path| %r!/(.+)!.match(path)[1] },
+            :fs_name => Mongo::Grid::DEFAULT_FS_NAME
           }
         end
 
@@ -62,10 +64,10 @@ module Rack
         def find_file(id_or_path)
           case @lookup.to_sym
           when :id
-            Mongo::Grid.new(db).get(BSON::ObjectId.from_string(id_or_path))
+            Mongo::Grid.new(db, @fs_name).get(BSON::ObjectId.from_string(id_or_path))
           when :path
             path = CGI::unescape(id_or_path)
-            Mongo::GridFileSystem.new(db).open(path, "r")
+            Mongo::GridFileSystem.new(db, @fs_name).open(path, "r")
           end
         end
 
