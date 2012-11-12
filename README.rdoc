@@ -43,6 +43,8 @@ Options:
   the middleware.  Default 'gridfs'.
 - +lookup+: whether to look up a file based on <tt>:id</tt> or <tt>:path</tt>
   (example below).  Default is <tt>:id</tt>.
+- +fs_name+: collection name for the file system, if not using the Mongo driver
+  default ("fs").
 
 You must also specify MongoDB database details:
 - +hostname+: the hostname/IP where the MongoDB server is running.  Default 'localhost'.

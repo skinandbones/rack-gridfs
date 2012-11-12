@@ -5,6 +5,8 @@
 ==== Features
 
 - Eliminate need for <tt>:require</tt> option in Gemfile (Konstantin Shabanov)
+- Add <tt>fs_name</tt> option as supported by the Mongo driver
+  ({max-power}[https://github.com/max-power])
 
 
 === 0.4.1 / June 26, 2011
