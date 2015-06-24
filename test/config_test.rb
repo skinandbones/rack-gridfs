@@ -60,9 +60,11 @@ class ConfigTest < Test::Unit::TestCase
         assert_equal mware.instance_variable_get(:@options)[:prefix], 'gridfs'
       end
 
-      should "have a normalized prefix" do
-        mware = Rack::GridFS.new(nil, @options.merge({:prefix => '/myprefix'}))
+      should "have a normalized prefix without changing the original string" do
+        prefix_option = '/myprefix'
+        mware = Rack::GridFS.new(nil, @options.merge({:prefix => prefix_option}))
         assert_equal mware.instance_variable_get(:@options)[:prefix], 'myprefix'
+        assert_equal prefix_option, '/myprefix'
       end
 
       should "have a username option" do

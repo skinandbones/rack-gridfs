@@ -41,7 +41,7 @@ module Rack
     def normalize_options(options)
       options.tap do |opts|
         opts[:prefix] ||= "gridfs"
-        opts[:prefix].gsub!(/^\//, '')
+        opts[:prefix] = opts[:prefix].gsub(/^\//, '')
         opts[:mapper] ||= lambda { |path| %r!^/#{options[:prefix]}/(.+)!.match(path)[1] }
       end
     end
