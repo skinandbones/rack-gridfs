@@ -24,8 +24,8 @@ Gem::Specification.new do |s|
   s.add_development_dependency('mocha', '~> 1.1')
   s.add_development_dependency('rack-test')
   s.add_development_dependency('rake')
-  s.add_development_dependency('rdoc', '>= 2.4.2')
   s.add_development_dependency('shoulda-context', '~> 1.2')
+  s.add_development_dependency('yard')
 
   s.files        = Dir.glob("lib/**/*") + %w(LICENSE README.rdoc Rakefile)
   s.require_path = 'lib'

@@ -1,6 +1,6 @@
 require 'bundler/setup'
 require 'rake/testtask'
-require 'rdoc/task'
+require 'yard'
 
 require File.expand_path("../lib/rack/gridfs/version", __FILE__)
 
@@ -28,10 +28,7 @@ rescue LoadError
   end
 end
 
-RDoc::Task.new do |rdoc|
-  rdoc.main = 'README.rdoc'
-  rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "Rack::GridFS #{Rack::GridFS::VERSION}"
-  rdoc.rdoc_files.include(%w[ README* CHANGES* ])
-  rdoc.rdoc_files.include('lib/**/*.rb')
+YARD::Rake::YardocTask.new do |t|
+  t.name = 'doc'
+  t.files = ['lib/**/*.rb']
 end
