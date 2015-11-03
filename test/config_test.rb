@@ -6,6 +6,7 @@ class ConfigTest < Minitest::Test
 
   context "Rack::GridFS" do
     context "on initialization" do
+      MONGODB_URI = 'mongodb://bob:so-s3cur3@myhostname.mydomain:8765/mydatabase'
 
       setup do
         stub_mongodb_connection
@@ -74,6 +75,11 @@ class ConfigTest < Minitest::Test
         mware = Rack::GridFS::Endpoint.new(@options)
         assert_equal @options[:password], mware.instance_variable_get(:@password)
       end
+      
+      should "have an uri option" do
+        mware = Rack::GridFS::Endpoint.new(:uri => MONGODB_URI)
+        assert_equal MONGODB_URI, mware.instance_variable_get(:@uri)
+      end
 
       should "not have a default username" do
         mware = Rack::GridFS::Endpoint.new(@options.except(:username))
@@ -101,9 +107,14 @@ class ConfigTest < Minitest::Test
         assert_equal options[:prefix], '/slashed'
       end
 
-      should "connect to the MongoDB server" do
+      should "connect to the MongoDB server by options" do
         Rack::GridFS::Endpoint.any_instance.expects(:connect!).returns(true).once
         Rack::GridFS::Endpoint.new(@options).db
+      end
+      
+      should "connect to the MongoDB server by uri" do
+        Rack::GridFS::Endpoint.any_instance.expects(:connect!).returns(true).once
+        Rack::GridFS::Endpoint.new(:uri => MONGODB_URI).db
       end
 
     end
