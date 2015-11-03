@@ -17,16 +17,25 @@ handle routing another way.
 == Ruby Version and Mongo Driver Compatibility Notes
 
 The library hasn't been updated for some time and is in the process of being
-brought up to modern standards on the `master` branch. It probably does not yet
-work with current versions of the `mongo` and `bson` gems (patches welcome if
-you need it faster than we can deliver it). Support for Ruby 1.8 is almost
-certainly already dropped on master—it was supported up to gem release/git tag
-v0.4.1.
+brought up to modern standards on the +master+ branch. It does not yet work
+with 2.x versions of the +mongo+ driver gem, which means that you will not be
+able to use it together with Mongoid 5.x (patches welcome if you need it faster
+than we can deliver it). Since Mongoid 3.x and 4.x use the +moped+ gem instead
+of +mongo+, though, you may be able to use the current rack-gridfs release in
+apps still using one of these older Mongoid versions. rack-gridfs should
+support the latest 1.x +mongo+ releases, {which support MongoDB 3.0}[https://docs.mongodb.org/ecosystem/drivers/driver-compatibility-reference/#reference-compatibility-mongodb-ruby].
 
-If for some reason you need support for ancient versions of the `mongo` driver
+Support for Ruby 1.8 is no longer being tested and will be dropped in the next
+version that supports +mongo+ 2.x (the driver itself officially drops 1.8
+support). It was supported up to rack-gridfs gem release/git tag v0.4.2.
+
+If for some reason you need support for ancient versions of the +mongo+ driver
 prior to v1.2, these were supported in rack-gridfs 0.3.0 and below. 0.4.x
-supports `mongo` 1.2(.x?) which made substantial changes to the earlier GridFS
+supports +mongo+ 1.2+ which made substantial changes to the earlier GridFS
 API.
+
+If your head is spinning, {this official blog post}[https://www.mongodb.com/blog/post/announcing-ruby-driver-20-rewrite]
+gives a good breakdown of driver version history and the future.
 
 == Installation
 
@@ -166,7 +175,7 @@ a Ruby project:
   $ bundle exec rake test
 
 Note that the test suite expects that you have MongoDB running locally on the
-default port and will use a database called `test`.
+default port and will use a database called +test+.
 
 == Copyright
 
