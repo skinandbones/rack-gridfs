@@ -98,7 +98,7 @@ class ConfigTest < Minitest::Test
       should "not mutate caller's option values" do
         options = @options.merge({:prefix => '/slashed'})
         Rack::GridFS.new(nil, options)
-        assert_equal options[:prefix], '/slashed'
+        assert_equal '/slashed', options[:prefix]
       end
 
       should "connect to the MongoDB server" do
