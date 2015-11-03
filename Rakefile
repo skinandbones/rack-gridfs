@@ -1,12 +1,18 @@
 require 'bundler/setup'
+require 'rake/testtask'
+require 'rdoc/task'
+
+require File.expand_path("../lib/rack/gridfs/version", __FILE__)
+
 Bundler::GemHelper.install_tasks
 
-require 'rake/testtask'
 Rake::TestTask.new(:test) do |test|
   test.libs << 'lib' << 'test'
   test.pattern = 'test/**/*_test.rb'
   test.verbose = true
 end
+
+task :default => :test
 
 begin
   require 'rcov/rcovtask'
@@ -22,12 +28,8 @@ rescue LoadError
   end
 end
 
-task :default => :test
-
-require 'rake/rdoctask'
-Rake::RDocTask.new do |rdoc|
-  require File.expand_path("../lib/rack/gridfs/version", __FILE__)
-
+RDoc::Task.new do |rdoc|
+  rdoc.main = 'README.rdoc'
   rdoc.rdoc_dir = 'rdoc'
   rdoc.title = "Rack::GridFS #{Rack::GridFS::VERSION}"
   rdoc.rdoc_files.include(%w[ README* CHANGES* ])

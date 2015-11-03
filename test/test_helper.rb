@@ -1,6 +1,6 @@
-require 'test/unit'
-require 'shoulda'
-require 'mocha'
+require 'minitest/autorun'
+require 'shoulda/context'
+require 'mocha/mini_test'
 
 require 'rack/builder'
 require 'rack/mock'

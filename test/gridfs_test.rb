@@ -3,7 +3,7 @@
 require 'test_helper'
 require 'pp'
 
-class Rack::GridFSTest < Test::Unit::TestCase
+class Rack::GridFSTest < Minitest::Test
   include Rack::Test::Methods
   include Rack::GridFS::Test::Methods
 

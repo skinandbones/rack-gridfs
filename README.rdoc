@@ -1,6 +1,6 @@
 = Rack::GridFS
 
-Rack:GridFS is a Rack middleware for creating HTTP endpoints for files
+Rack::GridFS is a Rack middleware for creating HTTP endpoints for files
 stored in MongoDB's GridFS.  You can configure a prefix string which
 will be used to match the path of a request, and further look up GridFS
 files based on either their +ObjectId+ or +filename+ field.
@@ -12,13 +12,21 @@ For example,
 If the prefix is "gridfs", then the id will be be "someobjectid".
 
 You can also use Rack::GridFS::Endpoint as a rack endpoint if you want to
-handle routing another way
+handle routing another way.
 
-== Mongo Driver Compatibility Notes
+== Ruby Version and Mongo Driver Compatibility Notes
 
-This version is currently based on mongo-1.2+. As there were significant changes
-to the GridFS API prior to v1.0, you may have luck with the git-tagged version
-0.2.0 of this library with earlier versions of the driver.
+The library hasn't been updated for some time and is in the process of being
+brought up to modern standards on the `master` branch. It probably does not yet
+work with current versions of the `mongo` and `bson` gems (patches welcome if
+you need it faster than we can deliver it). Support for Ruby 1.8 is almost
+certainly already dropped on master—it was supported up to gem release/git tag
+v0.4.1.
+
+If for some reason you need support for ancient versions of the `mongo` driver
+prior to v1.2, these were supported in rack-gridfs 0.3.0 and below. 0.4.x
+supports `mongo` 1.2(.x?) which made substantial changes to the earlier GridFS
+API.
 
 == Installation
 
@@ -147,6 +155,19 @@ these files as such:
   config.middleware.insert_after Rack::Runtime, Rack::GridFS,
     :prefix => 'uploads', :lookup => :path, :database => "my_app_#{Rails.env}"
 
+== Development and Contributing
+
+Running the project and unit tests in development follows typical procedure for
+a Ruby project:
+
+  $ git clone https://github.com/skinandbones/rack-gridfs.git
+  $ cd rack-gridfs
+  $ bundle install
+  $ bundle exec rake test
+
+Note that the test suite expects that you have MongoDB running locally on the
+default port and will use a database called `test`.
+
 == Copyright
 
-Copyright (c) 2010-2011 Blake Carlson. See LICENSE for details.
+Copyright (c) 2010-2015 Blake Carlson. See LICENSE for details.

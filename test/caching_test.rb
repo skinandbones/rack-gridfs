@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class CachingTest < Test::Unit::TestCase
+class CachingTest < Minitest::Test
   include Rack::Test::Methods
   include Rack::GridFS::Test::Methods
 

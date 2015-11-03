@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class ExceptionsTest < Test::Unit::TestCase
+class ExceptionsTest < Minitest::Test
   include Rack::Test::Methods
   include Rack::GridFS::Test::Methods
 

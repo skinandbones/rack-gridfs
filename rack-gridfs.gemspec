@@ -5,8 +5,8 @@ Gem::Specification.new do |s|
   s.name        = "rack-gridfs"
   s.version     = Rack::GridFS::VERSION
   s.platform    = Gem::Platform::RUBY
-  s.authors     = ["Blake Carlson"]
-  s.email       = ['blake@coin-operated.net']
+  s.authors     = ['Blake Carlson', 'Ches Martin']
+  s.email       = ['blake@coin-operated.net', 'ches@whiskeyandgrits.net']
   s.homepage    = "http://github.com/skinandbones/rack-gridfs"
   s.summary     = "Serve MongoDB GridFS files from Rack"
   s.description = "Rack middleware for creating HTTP endpoints for files stored in MongoDB's GridFS"
@@ -19,10 +19,12 @@ Gem::Specification.new do |s|
   s.add_dependency('mime-types')
 
   s.add_development_dependency('bundler', '>= 1.0.0')
-  s.add_development_dependency('mocha', '0.9.12')
+  s.add_development_dependency('minitest', '~> 5.8')
+  s.add_development_dependency('mocha', '~> 1.1')
   s.add_development_dependency('rack-test')
   s.add_development_dependency('rake')
-  s.add_development_dependency('shoulda')
+  s.add_development_dependency('rdoc', '>= 2.4.2')
+  s.add_development_dependency('shoulda-context', '~> 1.2')
 
   s.files        = Dir.glob("lib/**/*") + %w(LICENSE README.rdoc Rakefile)
   s.require_path = 'lib'

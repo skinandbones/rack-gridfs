@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class ConfigTest < Test::Unit::TestCase
+class ConfigTest < Minitest::Test
   include Rack::Test::Methods
   include Rack::GridFS::Test::Methods
 
@@ -92,7 +92,7 @@ class ConfigTest < Test::Unit::TestCase
 
       should "have a default mapper" do
         mware = Rack::GridFS::Endpoint.new(@options.except(:mapper))
-        assert_not_nil mware.instance_variable_get(:@options)[:mapper]
+        refute_nil mware.instance_variable_get(:@options)[:mapper]
       end
 
       should "connect to the MongoDB server" do
