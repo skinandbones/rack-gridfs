@@ -95,6 +95,12 @@ class ConfigTest < Minitest::Test
         refute_nil mware.instance_variable_get(:@options)[:mapper]
       end
 
+      should "not mutate caller's option values" do
+        options = @options.merge({:prefix => '/slashed'})
+        Rack::GridFS.new(nil, options)
+        assert_equal options[:prefix], '/slashed'
+      end
+
       should "connect to the MongoDB server" do
         Rack::GridFS::Endpoint.any_instance.expects(:connect!).returns(true).once
         Rack::GridFS::Endpoint.new(@options).db

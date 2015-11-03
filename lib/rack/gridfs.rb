@@ -39,6 +39,8 @@ module Rack
 
     # TODO: doc explanation/example of custom mapper
     def normalize_options(options)
+      options = options.dup
+
       options.tap do |opts|
         opts[:prefix] ||= "gridfs"
         opts[:prefix].gsub!(/^\//, '')
