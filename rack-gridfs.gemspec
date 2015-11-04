@@ -27,13 +27,13 @@ Gem::Specification.new do |s|
   s.add_development_dependency('shoulda-context', '~> 1.2')
   s.add_development_dependency('yard')
 
-  s.files        = Dir.glob("lib/**/*") + %w(LICENSE README.rdoc Rakefile)
+  s.files        = Dir.glob("lib/**/*") + %w(LICENSE README.md Rakefile)
   s.require_path = 'lib'
 
   s.extra_rdoc_files = [
-    "CHANGES.rdoc",
+    "CHANGES.md",
     "LICENSE",
-    "README.rdoc"
+    "README.md"
   ]
 end
 
