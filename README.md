@@ -1,6 +1,9 @@
 Rack::GridFS
 ============
 
+[![Gem Version](https://badge.fury.io/rb/rack-gridfs.svg)][gem]
+[![Build Status](https://travis-ci.org/skinandbones/rack-gridfs.svg?branch=0.4.x)][travis]
+
 Rack::GridFS is a Rack middleware for creating HTTP endpoints for files
 stored in MongoDB's GridFS. You can configure a prefix string which
 will be used to match the path of a request, and further look up GridFS
@@ -14,6 +17,9 @@ If the prefix is "gridfs", then the id will be be "someobjectid".
 
 You can also use `Rack::GridFS::Endpoint` as a rack endpoint if you want to
 handle routing another way.
+
+[gem]: https://badge.fury.io/rb/rack-gridfs
+[travis]: https://travis-ci.org/skinandbones/rack-gridfs
 
 ### Status ###
 
