@@ -1,6 +1,5 @@
 require 'bundler/setup'
 require 'rake/testtask'
-require 'yard'
 
 require File.expand_path("../lib/rack/gridfs/version", __FILE__)
 
@@ -28,7 +27,14 @@ rescue LoadError
   end
 end
 
-YARD::Rake::YardocTask.new do |t|
-  t.name = 'doc'
-  t.files = ['lib/**/*.rb']
+begin
+  require 'yard'
+  YARD::Rake::YardocTask.new do |t|
+    t.name = 'doc'
+    t.files = ['lib/**/*.rb']
+  end
+rescue LoadError
+  task :doc do
+    abort "YARD not available. In order to generate docs, please `gem install yard`."
+  end
 end
