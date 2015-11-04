@@ -1,6 +1,10 @@
 CHANGE LOG
 ----------
 
+### 0.4.3 / November 4, 2015 ###
+
+Same as v0.4.2, but v0.4.2 gem yanked because of faulty gemspec file (grumble).
+
 ### 0.4.2 / November 3, 2015 ###
 
 [full commit log](https://github.com/skinandbones/rack-gridfs/compare/v0.4.1...v0.4.2)
