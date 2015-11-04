@@ -8,4 +8,5 @@ rvm:
   - 2.2.3
   - jruby-19mode
 
+sudo: false  # Apparently the way to use container-based environment. Intuitive...
 services: mongodb
